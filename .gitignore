@@ -47,6 +47,7 @@ Debug/
 .vs/
 .vscode/
 .idea/
+.build/
 
 *_build/
 */tmp/

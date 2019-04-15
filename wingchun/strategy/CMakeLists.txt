@@ -15,9 +15,11 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
 PROJECT(wingchunstrategy)
 
-SET(STRATEGY_SOURCE_FILES WCDataWrapper.cpp WCDataWrapper.h IWCStrategy.h IWCStrategy.cpp WCStrategyUtil.h WCStrategyUtil.cpp PyWCStrategy.cpp PyWCStrategy.h)
+SET(STRATEGY_SOURCE_FILES WCDataWrapper.cpp WCDataWrapper.h IWCStrategy.h IWCStrategy.cpp WCStrategyUtil.h WCStrategyUtil.cpp PyWCStrategy.cpp PyWCStrategy.h 
+    backtest/WCBackTestDataWrapper.cpp backtest/WCBackTestDataWrapper.h backtest/IWCBackTestStrategy.h backtest/IWCBackTestStrategy.cpp 
+    backtest/WCBackTestStrategyUtil.h backtest/WCBackTestStrategyUtil.cpp backtest/PyBackTestStrategy.cpp backtest/PyBackTestStrategy.h)
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${STRATEGY_SOURCE_FILES})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} journal kflog python ${Boost_LIBRARIES})
-INSTALL(TARGETS ${PROJECT_NAME} DESTINATION "lib/wingchun")
+INSTALL(TARGETS ${JECT_NAME} DESTINATION "lib/wingchun")
 
 INSTALL(FILES ../base/WC_DECLARE.h IWCDataProcessor.h IWCStrategy.h WCDataWrapper.h WCStrategyUtil.h DESTINATION "include")
