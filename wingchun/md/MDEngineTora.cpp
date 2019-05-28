@@ -1,89 +1,83 @@
-#include "MDEngineTora.h"
+#include "MDEngineTORA.h"
 #include "longfist/tora.h"
-#include "EngineUtil.hpp"
 #include "TypeConvert.hpp"
+#include "Timer.h"
+#include "longfist/LFUtils.h"
+//#include "EngineUtil.hpp"
 
 USING_WC_NAMESPACE
 
-#define GBK2UTF8(msg) kungfu::gbk2utf8(string(msg))
+#define GBK2UTF8(msg) kungfu::yijinjing::gbk2utf8(string(msg))
 
-MDEngineTora::MDEngineTora() : IMDEngine(SOURCE_TORA), api(nullptr), req_id(0)
+MDEngineTORA::MDEngineTORA() : IMDEngine(SOURCE_TORA), api(nullptr), reqId(0)
 {
-    logger = KfLog::getLogger("engine.md.tora");
+    logger = yijinjing::KfLog::getLogger("MdEngine.TORA");
 }
 
-void MDEngineTora::load(const json& j_config)
+void MDEngineTORA::load(const json& j_config)
 {
     front_uri = j_config[WC_CONFIG_KEY_FRONT_URI].get<string>();
     user_id = j_config[WC_CONFIG_KEY_USER_ID].get<string>();
     password = j_config[WC_CONFIG_KEY_PASSWORD].get<string>();
-    status_wrapper->resize_accounts(1);
 }
 
-bool MDEngineTora::try_init(size_t account_idx)
+void MDEngineTORA::logout()
 {
-    drop_api(account_idx);
-    api = CTORATstpMdApi::CreateTstpMdApi();
-    if (nullptr != api)
+    if (logged_in)
     {
-        api->RegisterSpi(this);
-        return true;
+        CTORATstpUserLogoutField req = {};
+        strncpy(req.UserID, user_id.c_str(), 16);
+        if (api->ReqUserLogout(&req, reqId++))
+        {
+            KF_LOG_ERROR(logger, "[request] logout failed!" << " (Uid)" << req.UserID);
+        }
     }
-    return false;
+    connected = false;
+    logged_in = false;
 }
 
-void MDEngineTora::drop_api(size_t account_idx)
+void MDEngineTORA::release_api()
 {
-    if (nullptr != api)
+    if (api != nullptr)
     {
         api->Release();
         api = nullptr;
     }
 }
 
-bool MDEngineTora::req_connect(size_t account_idx)
+void MDEngineTORA::connect(long timeout_nsec)
 {
-    api->RegisterFront((char*)front_uri.c_str());
-    api->Init();
-    return true;
+    api = CTORATstpMdApi::CreateTstpMdApi();
+    if (nullptr != api)
+    {
+        api->RegisterSpi((CTORATstpMdSpi*)this);
+    }
+    if (!connected)
+    {
+        api->RegisterFront((char*)front_uri.c_str());
+        api->Init();
+        //long start_time = yijinjing::getNanoTime();
+        //while (!connected && yijinjing::getNanoTime() - start_time < timeout_nsec)
+        //{}
+    }
 }
 
-bool MDEngineTora::req_disconnect(size_t account_idx)
-{
-    status_wrapper->on_disconnect();
-    return true;
-}
-
-bool MDEngineTora::req_login(size_t account_idx)
+void MDEngineTORA::login(long timeout_nsec)
 {
     CTORATstpReqUserLoginField req = {};
     strncpy(req.LogInAccount, user_id.c_str(), 21);
     req.LogInAccountType = TORA_TSTP_LACT_UserID;
     strncpy(req.Password, password.c_str(), 41);
-    if (api->ReqUserLogin(&req, ++req_id) != 0)
+    if (api->ReqUserLogin(&req, ++reqId) != 0)
     {
         KF_LOG_ERROR(logger, "[Login] Login failed! (Uid)" << user_id);
-        return false;
     }
-    return true;
+    long start_time = yijinjing::getNanoTime();
+    while (!logged_in && yijinjing::getNanoTime() - start_time < timeout_nsec)
+    {}
 }
 
-bool MDEngineTora::req_logout(size_t account_idx)
-{
-    CTORATstpUserLogoutField req = {};
-    strncpy(req.UserID, user_id.c_str(), 16);
-    if (api->ReqUserLogout(&req, ++req_id) != 0)
-    {
-        KF_LOG_ERROR(logger, "[Logout] Logout failed! (Uid)" << user_id);
-        return false;
-    }
-
-    // OnRspUserLogout won't be called for current
-    status_wrapper->on_logout();
-    return true;
-}
-
-void MDEngineTora::subscribeMarketData(const vector<string>& instruments, const vector<string>& markets)
+void MDEngineTORA::subscribeMarketData(const vector<string>& instruments, const vector<string>& markets)
 {
     map<TTORATstpExchangeIDType, vector<string>> ticker_map;
     for (size_t i = 0; i < markets.size(); ++i)
@@ -122,10 +116,10 @@ void MDEngineTora::subscribeMarketData(const vector<string>& instruments, const 
     }
 }
 
-void MDEngineTora::OnFrontConnected()
+void MDEngineTORA::OnFrontConnected()
 {
     KF_LOG_INFO(logger, "[Connect] OnFrontConnected");
-    status_wrapper->on_connect();
+    connected = true;
 }
 
 ///当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
@@ -136,13 +130,13 @@ void MDEngineTora::OnFrontConnected()
 ///        -7 流序号错误
 ///        -8 错误的心跳报文
 ///        -9 错误的报文
-void MDEngineTora::OnFrontDisconnected(int nReason)
+void MDEngineTORA::OnFrontDisconnected(int nReason)
 {
     KF_LOG_ERROR(logger, "[Connect] OnFrontDisconnected (reason)" << nReason);
-    status_wrapper->on_disconnect();
+    connected = false;
 }
 
-void MDEngineTora::OnRspError(CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void MDEngineTORA::OnRspError(CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
@@ -153,7 +147,7 @@ void MDEngineTora::OnRspError(CTORATstpRspInfoField *pRspInfo, int nRequestID, b
     }
 }
 
-void MDEngineTora::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLogin, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void MDEngineTORA::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLogin, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
@@ -165,11 +159,11 @@ void MDEngineTora::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLogin, CTO
     {
         KF_LOG_INFO(logger, "[Login] OnRspUserLogin" << " (Uid)" << pRspUserLogin->UserID
                                                      << " (SName)" << pRspUserLogin->SystemName);
-        status_wrapper->on_login();
+        logged_in = true;
     }
 }
 
-void MDEngineTora::OnRspUserLogout(CTORATstpUserLogoutField *pUserLogout, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void MDEngineTORA::OnRspUserLogout(CTORATstpUserLogoutField *pUserLogout, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
@@ -180,11 +174,11 @@ void MDEngineTora::OnRspUserLogout(CTORATstpUserLogoutField *pUserLogout, CTORAT
     else
     {
         KF_LOG_INFO(logger, "[Logout] OnRspUserLogout" << " (Uid)" << pUserLogout->UserID);
-        status_wrapper->on_logout();
+        logged_in = false;
     }
 }
 
-void MDEngineTora::OnRspSubMarketData(CTORATstpSpecificSecurityField *pSpecificSecurity, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void MDEngineTORA::OnRspSubMarketData(CTORATstpSpecificSecurityField *pSpecificSecurity, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
@@ -195,11 +189,21 @@ void MDEngineTora::OnRspSubMarketData(CTORATstpSpecificSecurityField *pSpecificS
     }
 }
 
-void MDEngineTora::OnRtnDepthMarketData(CTORATstpMarketDataField *pDepthMarketData)
+void MDEngineTORA::OnRtnDepthMarketData(CTORATstpMarketDataField *pDepthMarketData)
 {
     auto data = parseFrom(*pDepthMarketData);
     on_market_data(&data);
-    raw_writer->write_frame(pDepthMarketData, sizeof(CTORATstpMarketDataField), source_id, MSG_TYPE_LF_MD_TORA, 1, -1);
+    //raw_writer->write_frame(pDepthMarketData, sizeof(CTORATstpMarketDataField), source_id, MSG_TYPE_LF_MD_TORA, 1, -1);
 }
 
-EXPORT_ENGINE_TO_PYTHON(libtoramd, MDEngineTora);
+BOOST_PYTHON_MODULE(libtoramd)
+{
+    using namespace boost::python;
+    class_<MDEngineTORA, boost::shared_ptr<MDEngineTORA> >("Engine")
+    .def(init<>())
+    .def("init", &MDEngineTORA::initialize)
+    .def("start", &MDEngineTORA::start)
+    .def("stop", &MDEngineTORA::stop)
+    .def("logout", &MDEngineTORA::logout)
+    .def("wait_for_stop", &MDEngineTORA::wait_for_stop);
+}

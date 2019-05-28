@@ -1,4 +1,4 @@
-#include "TDEngineTora.h"
+#include "TDEngineTORA.h"
 #include "longfist/tora.h"
 #include "longfist/LFUtils.h"
 #include "TypeConvert.hpp"
@@ -6,21 +6,23 @@
 
 USING_WC_NAMESPACE
 
-#define GBK2UTF8(msg) kungfu::gbk2utf8(string(msg))
+#define GBK2UTF8(msg) kungfu::yijinjing::gbk2utf8(string(msg))
 
-TDEngineTora::TDEngineTora() : ITDEngine(SOURCE_TORA), req_id(0), real_trade(false)
+TDEngineTORA::TDEngineTORA() : ITDEngine(SOURCE_TORA), req_id(0), real_trade(false)
 {
-    logger = KfLog::getLogger("engine.trade.tora");
+    logger = yijinjing::KfLog::getLogger("TradeEngine.TORA");
+    KF_LOG_INFO(logger, "[ATTENTION] default to confirm settlement and no authentication!");
+    //logger = KfLog::getLogger("engine.trade.tora");
 }
 
-void TDEngineTora::init()
+void TDEngineTORA::init()
 {
     ITDEngine::init();
     JournalPair tdRawPair = getTdRawJournalPair(source_id);
     raw_writer = yijinjing::JournalWriter::create(tdRawPair.first, tdRawPair.second, "RAW_" + name());
 }
 
-void TDEngineTora:: pre_load(const json& j_config)
+void TDEngineTORA:: pre_load(const json& j_config)
 {
     front_uri = j_config[WC_CONFIG_KEY_FRONT_URI].get<string>();
     mac = j_config["Mac"].get<string>();
@@ -34,8 +36,8 @@ void TDEngineTora:: pre_load(const json& j_config)
         real_trade = j_config["RealTrade"].get<bool>();
     }
 }
-
-bool TDEngineTora::validate_account_info(const json& j_config)
+/*
+bool TDEngineTORA::validate_account_info(const json& j_config)
 {
     bool is_valid_json = j_config.find("InvestorId") != j_config.end()
                       && j_config["InvestorId"].is_string()
@@ -46,8 +48,8 @@ bool TDEngineTora::validate_account_info(const json& j_config)
 
     return is_valid_json;
 }
-
-TradeAccount TDEngineTora::load_account(int idx, const json& j_account)
+*/
+TradeAccount TDEngineTORA::load_account(int idx, const json& j_account)
 {
     // for tora td, we use InvestorId as UserId, AccountId as InvestorId
     string user_id = j_account["InvestorId"].get<string>();
@@ -59,6 +61,9 @@ TradeAccount TDEngineTora::load_account(int idx, const json& j_account)
     unit.front_id = -1;
     unit.session_id = -1;
     unit.api_initialized = false;
+    unit.initialized = false;
+    unit.connected = false;
+    unit.logged_in = false;
     unit.shareholders[EXCHANGE_SSE] = "";
     unit.shareholders[EXCHANGE_SZE] = "";
 
@@ -69,101 +74,155 @@ TradeAccount TDEngineTora::load_account(int idx, const json& j_account)
     return account;
 }
 
-void TDEngineTora::resize_accounts(int account_num)
+void TDEngineTORA::resize_accounts(int account_num)
 {
     account_units.resize(account_num);
 }
 
-bool TDEngineTora::try_init(size_t account_idx)
+void TDEngineTORA::release_api()
 {
-    auto& unit = account_units[account_idx];
-    drop_api(account_idx);
-    unit.api = CTORATstpTraderApi::CreateTstpTraderApi();
-    if (nullptr == unit.api)
+    for (size_t idx = 0; idx < account_units.size(); idx++)
     {
-        KF_LOG_ERROR(logger, "[Init] Failed to create api for acc (acc_idx) " << account_idx);
-        return false;
-    }
-    unit.api->RegisterSpi(this);
-    return true;
-}
-
-void TDEngineTora::drop_api(size_t account_idx)
-{
-    auto& unit = account_units[account_idx];
-    unit.api_initialized = false;
-    if (nullptr != unit.api)
-    {
-        unit.api->Release();
-        unit.api = nullptr;
+        auto& unit = account_units[idx];
+        unit.api_initialized = false;
+        if (nullptr != unit.api)
+        {
+            unit.api->Release();
+            unit.api = nullptr;
+        }
     }
 }
 
-bool TDEngineTora::req_connect(size_t account_idx)
+void TDEngineTORA::connect(long timeout_nsec)
 {
-    auto& unit = account_units[account_idx];
-    if (!unit.api_initialized)
+    KF_LOG_INFO(logger, "[connect] connect " );
+    for (size_t idx=0; idx <account_units.size(); idx ++)
     {
-        unit.api->RegisterFront((char*)front_uri.c_str());
-        unit.api->SubscribePrivateTopic(TORA_TERT_QUICK);
-        unit.api->SubscribePublicTopic(TORA_TERT_QUICK);
-        unit.api->Init();
-        unit.api_initialized = true;
+        if (account_units[idx].api == nullptr)
+        {
+            CTORATstpTraderApi* api = CTORATstpTraderApi::CreateTstpTraderApi();
+            if (!api)
+            {
+                throw std::runtime_error("TORA_TD failed to create api");
+            }
+            api->RegisterSpi(this);
+            account_units[idx].api = api;
+            KF_LOG_INFO(logger, "[unit.api] "<<(account_units[idx].api != nullptr)<<" "<<idx );
+        }
+        if (!account_units[idx].connected)
+        {
+            curAccountIdx = idx;
+            account_units[idx].api->RegisterFront((char*)front_uri.c_str());
+            account_units[idx].api->SubscribePrivateTopic(TORA_TERT_QUICK);
+            account_units[idx].api->SubscribePublicTopic(TORA_TERT_QUICK);
+            if (!account_units[idx].initialized)
+            {
+                account_units[idx].api->Init();
+                account_units[idx].initialized = true;
+            }
+            long start_time = yijinjing::getNanoTime();
+            while (!account_units[idx].connected && yijinjing::getNanoTime() - start_time < timeout_nsec)
+            {}
+        }
     }
-    return true;
 }
 
-bool TDEngineTora::req_disconnect(size_t account_idx)
+bool TDEngineTORA::is_connected() const
 {
-    auto& unit = account_units[account_idx];
-    unit.api_initialized = false;
-    status_wrapper->on_disconnect();
-    return true;
-}
-
-bool TDEngineTora::req_login(size_t account_idx)
-{
-    auto& account = account_helper->get_trade_account(account_idx);
-    CTORATstpReqUserLoginField req = {};
-    strncpy(req.LogInAccount, account.InvestorID, 21);
-    strncpy(req.MacAddress, mac.c_str(), 21);
-    strncpy(req.ClientIPAddress, ip.c_str(), 16);
-    strncpy(req.GWMacAddress, gw_mac.c_str(), 21);
-    strncpy(req.GWInnerIPAddress, gw_inner_ip.c_str(), 16);
-    strncpy(req.GWOuterIPAddress, gw_outer_ip.c_str(), 16);
-    strncpy(req.HDSerial, hd_sn.c_str(), 33);
-
-    req.LogInAccountType = TORA_TSTP_LACT_UserID;
-
-    strncpy(req.Password, account.Password, 41);
-    if (account_units[account_idx].api->ReqUserLogin(&req, ++req_id) != 0)
+    for (auto& unit: account_units)
     {
-        KF_LOG_ERROR(logger, "[Login] Login failed! (Iid)" << account.InvestorID);
-        return false;
+        if (!unit.connected)
+            return false;
     }
     return true;
 }
 
-bool TDEngineTora::req_logout(size_t account_idx)
+bool TDEngineTORA::is_logged_in() const
 {
-    auto& account = account_helper->get_trade_account(account_idx);
-    CTORATstpUserLogoutField req = {};
-    strncpy(req.UserID, account.UserID, 16);
-    if (account_units[account_idx].api->ReqUserLogout(&req, ++req_id) != 0)
+    for (auto& unit: account_units)
     {
-        KF_LOG_ERROR(logger, "[Logout] Logout failed! (Uid)" << account.UserID);
-        return false;
+        if (!unit.logged_in)
+            return false;
     }
-
-    // OnRspUserLogout won't be called for current
-    status_wrapper->on_logout();
     return true;
 }
 
-bool TDEngineTora::req_investor_position(const LFQryPositionField* data, int account_index, int requestId)
+void TDEngineTORA::login(long timeout_nsec)
+{
+    KF_LOG_INFO(logger, "[request] login "<<account_units.size() );
+    for (size_t idx = 0; idx < account_units.size(); idx ++)
+    {
+        KF_LOG_INFO(logger, "[unit.api] "<<(account_units[idx].api != nullptr)<<" "<<idx );
+        AccountUnitTORA& unit = account_units[idx];
+        TradeAccount& account = accounts[idx];
+        KF_LOG_INFO(logger, "[request] " << " (InvestorID)" << account.InvestorID);
+        if (!unit.logged_in)
+        {
+            KF_LOG_INFO(logger, "[request] in " << " (InvestorID)" << account.InvestorID);
+            CTORATstpReqUserLoginField req = {};
+            req.LogInAccountType = TORA_TSTP_LACT_UserID;
+            strncpy(req.LogInAccount, account.InvestorID, 21);
+            strncpy(req.Password, account.Password, 41);
+
+            strncpy(req.MacAddress, "", 21);
+            strncpy(req.ClientIPAddress, "", 16);
+            strncpy(req.GWMacAddress, "", 21);
+            strncpy(req.GWInnerIPAddress, "", 16);
+            strncpy(req.GWOuterIPAddress, "", 16);
+            strncpy(req.HDSerial, "", 33);
+
+            if (unit.api != nullptr)
+            {
+                KF_LOG_ERROR(logger, "[request] unit.api != nullptr" << " (Uid)" << req.LogInAccount);
+                int rid = unit.api->ReqUserLogin(&req, request_id++);
+                account_units[idx].login_rid = request_id-1;
+                if  (rid)
+                {
+                    KF_LOG_ERROR(logger, "[request] login failed!" << " (Uid)" << req.LogInAccount);
+                }
+
+            }
+            else
+            {
+                KF_LOG_INFO(logger, "[request] login !" << " (Uid)" << req.LogInAccount);
+            }
+
+            long start_time = yijinjing::getNanoTime();
+            while (!unit.logged_in && yijinjing::getNanoTime() - start_time < timeout_nsec)
+            {
+            }
+        }
+        else
+        {
+            KF_LOG_INFO(logger, "[request] alread login !" << " (InvestorID)" << account.InvestorID);
+        }
+        
+    }
+}
+
+void TDEngineTORA::logout()
+{
+    for (size_t idx = 0; idx < account_units.size(); idx++)
+    {
+        AccountUnitTORA& unit = account_units[idx];
+        TradeAccount& account = accounts[idx];
+        if (unit.logged_in)
+        {
+            CTORATstpUserLogoutField req = {};
+            strncpy(req.UserID, account.UserID, 16);
+            if (account_units[idx].api->ReqUserLogout(&req, ++req_id) != 0)
+            {
+                KF_LOG_ERROR(logger, "[Logout] Logout failed! (Uid)" << account.UserID);
+            }
+        }
+        unit.logged_in = false;
+    }
+}
+
+void TDEngineTORA::req_investor_position(const LFQryPositionField* data, int account_index, int requestId)
 {
     CTORATstpQryPositionField req = parseTo(*data);
-    auto& account = account_helper->get_trade_account(account_index);
+    auto& account = accounts[account_index];//  account_helper->get_trade_account(account_index);
     strncpy(req.InvestorID, account.UserID, 13);
     int ret = account_units[account_index].api->ReqQryPosition(&req, requestId);
     if (ret != 0)
@@ -171,16 +230,14 @@ bool TDEngineTora::req_investor_position(const LFQryPositionField* data, int acc
         KF_LOG_ERROR(logger, "[ReqPos] Request investor position failed!" << " (rid)" << requestId
                                                                            << " (idx)" << account_index
                                                                            << " (error_id)" << ret);
-        return false;
     }
     send_writer->write_frame(&req, sizeof(CTORATstpQryPositionField), source_id, MSG_TYPE_LF_QRY_POS_TORA, 1, requestId);
-    return true;
 }
 
-bool TDEngineTora::req_qry_account(const LFQryAccountField* data, int account_index, int requestId)
+void TDEngineTORA::req_qry_account(const LFQryAccountField* data, int account_index, int requestId)
 {
     CTORATstpQryTradingAccountField req = parseTo(*data);
-    auto& account = account_helper->get_trade_account(account_index);
+    auto& account = accounts[account_index];//account_helper->get_trade_account(account_index);
     if (real_trade)
     {
         strcat(req.AccountID, "01");
@@ -193,13 +250,11 @@ bool TDEngineTora::req_qry_account(const LFQryAccountField* data, int account_in
         KF_LOG_ERROR(logger, "[ReqAcc] Request trading account failed!" << " (rid)" << requestId
                                                                         << " (idx)" << account_index
                                                                         << " (error_id)" << ret);
-        return false;
     }
     send_writer->write_frame(&req, sizeof(CTORATstpQryTradingAccountField), source_id, MSG_TYPE_LF_QRY_ACCOUNT_TORA, 1, requestId);
-    return true;
 }
 
-bool TDEngineTora::req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time)
+void TDEngineTORA::req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time)
 {
     auto& unit = account_units[account_index];
     CTORATstpInputOrderField req = parseTo(*data);
@@ -217,15 +272,12 @@ bool TDEngineTora::req_order_insert(const LFInputOrderField* data, int account_i
     if (ret != 0)
     {
         KF_LOG_ERROR(logger, "[OrderInsert] Request order insert failed!" << " (rid)" << requestId
-                                                                          << " (idx)" << account_index
-                                                                          << " (error_id)" << ret);
-        return false;
+                                                                          << " (idx)" << account_index);
     }
     send_writer->write_frame(&req, sizeof(CTORATstpInputOrderField), source_id, MSG_TYPE_LF_ORDER_TORA, 1, requestId);
-    return true;
 }
 
-bool TDEngineTora::req_order_action(const LFOrderActionField* data, int account_index, int requestId, long rcv_time)
+void TDEngineTORA::req_order_action(const LFOrderActionField* data, int account_index, int requestId, long rcv_time)
 {
     CTORATstpInputOrderActionField req = parseTo(*data);
     req.FrontID = account_units[account_index].front_id;
@@ -238,7 +290,7 @@ bool TDEngineTora::req_order_action(const LFOrderActionField* data, int account_
     {
         req.ExchangeID = '2';
     }
-    auto& account = account_helper->get_trade_account(account_index);
+    auto& account = accounts[account_index]; //account_helper->get_trade_account(account_index);
     strncpy(req.InvestorID, account.UserID, 13);
     KF_LOG_INFO(logger, "[OrderAction] (investor_id)" << req.InvestorID << " (security)" << req.SecurityID << " (user)" << req.UserID 
                                                       << " (exchange)" << req.ExchangeID);
@@ -248,25 +300,23 @@ bool TDEngineTora::req_order_action(const LFOrderActionField* data, int account_
         KF_LOG_ERROR(logger, "[OrderAction] Request order action failed!" << " (rid)" << requestId
                                                                           << " (idx)" << account_index
                                                                           << " (error_id)" << ret);
-        return false;
     }
     send_writer->write_frame(&req, sizeof(CTORATstpInputOrderActionField), source_id, MSG_TYPE_LF_ORDER_ACTION_TORA, 1, requestId);
-    return true;
 }
 
-void TDEngineTora::OnFrontConnected()
+void TDEngineTORA::OnFrontConnected()
 {
-    KF_LOG_INFO(logger, "[Connect] (idx)" << status_wrapper->get_current_account_idx());
-    status_wrapper->on_connect();
+    KF_LOG_INFO(logger, "[Connect] (account)" << accounts[curAccountIdx].UserID);
+    account_units[curAccountIdx].connected = true;
 }
 
-void TDEngineTora::OnFrontDisconnected(int nReason)
+void TDEngineTORA::OnFrontDisconnected(int nReason)
 {
-    KF_LOG_INFO(logger, "[Connect] (reason)" << nReason << " (idx)" << status_wrapper->get_current_account_idx());
-    status_wrapper->on_disconnect();
+    KF_LOG_INFO(logger, "[Connect] (reason)" << nReason << " (idx)" <<  curAccountIdx);
+    account_units[curAccountIdx].connected = false;
 }
 
-void TDEngineTora::OnRspError(CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void TDEngineTORA::OnRspError(CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
@@ -277,8 +327,9 @@ void TDEngineTora::OnRspError(CTORATstpRspInfoField *pRspInfo, int nRequestID, b
     }
 }
 
-void TDEngineTora::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginField, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void TDEngineTORA::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginField, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
+    KF_LOG_INFO(logger, "[OnRspUserLogin]");
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
          KF_LOG_ERROR(logger, "[Login] OnRspUserLogin Error " << " (errID)" << pRspInfo->ErrorID
@@ -289,29 +340,29 @@ void TDEngineTora::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginField
     {
         KF_LOG_INFO(logger, "[Login] OnRspUserLogin" << " (Uid)" << pRspUserLoginField->UserID
                                                      << " (SName)" << pRspUserLoginField->SystemName);
-        int account_idx = status_wrapper->get_current_account_idx();
-        if (account_idx >= 0)
-        {
-            auto& unit = account_units[account_idx];
-            unit.front_id = pRspUserLoginField->FrontID;
-            unit.session_id = pRspUserLoginField->SessionID;
 
-            // req shareholder info
-            auto& account = account_helper->get_trade_account(account_idx);
-
-            CTORATstpQryShareholderAccountField req = {};
-            strcpy(req.InvestorID, account.InvestorID);
-            req.TradingCodeClass = TORA_TSTP_CIDT_Normal;
-            unit.api->ReqQryShareholderAccount(&req, 100);
-        }
-        else
+        for (auto& unit: account_units)
         {
-            status_wrapper->on_login();
+            KF_LOG_INFO(logger, "login_rid: "<<unit.login_rid << " nRequestID: " << nRequestID);
+            if (unit.login_rid == nRequestID)
+            {
+                unit.front_id = pRspUserLoginField->FrontID;
+                unit.session_id = pRspUserLoginField->SessionID;
+                unit.logged_in = true;
+                CTORATstpQryShareholderAccountField req = {};
+                strcpy(req.InvestorID, accounts[curAccountIdx].InvestorID);
+                KF_LOG_INFO(logger, "ReqQryShareholderAccount InvestorID: " << accounts[curAccountIdx].InvestorID <<" nullptr: "<<(unit.api == nullptr));
+                //strcpy(req.InvestorID, pRspUserLoginField->UserID);
+
+                req.TradingCodeClass = TORA_TSTP_CIDT_Normal;
+                int rid = unit.api->ReqQryShareholderAccount(&req, request_id++);
+                KF_LOG_INFO(logger,"rid: "<<rid);
+            }
         }
     }
 }
 
-void TDEngineTora::OnRspUserLogout(CTORATstpUserLogoutField *pUserLogoutField, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void TDEngineTORA::OnRspUserLogout(CTORATstpUserLogoutField *pUserLogoutField, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
@@ -322,17 +373,17 @@ void TDEngineTora::OnRspUserLogout(CTORATstpUserLogoutField *pUserLogoutField, C
     else
     {
         KF_LOG_INFO(logger, "[Logout] OnRspUserLogout" << " (Uid)" << pUserLogoutField->UserID);
-        if (status_wrapper->get_current_account_idx() >= 0)
+        if ( curAccountIdx >= 0)
         {
-            auto& unit = account_units[status_wrapper->get_current_account_idx()];
+            auto& unit =  account_units[curAccountIdx];
             unit.front_id = -1;
             unit.session_id = -1;
         }
-        status_wrapper->on_logout();
+         account_units[curAccountIdx].logged_in = false;
     }
 }
 
-void TDEngineTora::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void TDEngineTORA::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     LFInputOrderField data = {};
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
@@ -346,7 +397,7 @@ void TDEngineTora::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderField, 
     }
 }
 
-void TDEngineTora::OnErrRtnOrderInsert(CTORATstpInputOrderField *pInputOrder, CTORATstpRspInfoField *pRspInfo)
+void TDEngineTORA::OnErrRtnOrderInsert(CTORATstpInputOrderField *pInputOrder, CTORATstpRspInfoField *pRspInfo)
 {
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
@@ -355,7 +406,7 @@ void TDEngineTora::OnErrRtnOrderInsert(CTORATstpInputOrderField *pInputOrder, CT
     }
 }
 
-void TDEngineTora::OnRspOrderAction(CTORATstpInputOrderActionField *pInputOrderActionField, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void TDEngineTORA::OnRspOrderAction(CTORATstpInputOrderActionField *pInputOrderActionField, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     LFOrderActionField data = {};
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
@@ -369,7 +420,7 @@ void TDEngineTora::OnRspOrderAction(CTORATstpInputOrderActionField *pInputOrderA
     }
 }
 
-void TDEngineTora::OnErrRtnOrderAction(CTORATstpOrderActionField *pOrderAction, CTORATstpRspInfoField *pRspInfo)
+void TDEngineTORA::OnErrRtnOrderAction(CTORATstpOrderActionField *pOrderAction, CTORATstpRspInfoField *pRspInfo)
 {
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
@@ -378,21 +429,21 @@ void TDEngineTora::OnErrRtnOrderAction(CTORATstpOrderActionField *pOrderAction, 
     }
 }
 
-void TDEngineTora::OnRtnOrder(CTORATstpOrderField *pOrder)
+void TDEngineTORA::OnRtnOrder(CTORATstpOrderField *pOrder)
 {
     auto data = parseFrom(*pOrder);
     on_rtn_order(&data);
     raw_writer->write_frame(pOrder, sizeof(CTORATstpOrderField), source_id, MSG_TYPE_LF_RTN_ORDER_TORA, 1, (pOrder->RequestID > 0) ? pOrder->RequestID: -1);
 }
 
-void TDEngineTora::OnRtnTrade(CTORATstpTradeField *pTrade)
+void TDEngineTORA::OnRtnTrade(CTORATstpTradeField *pTrade)
 {
     auto data = parseFrom(*pTrade);
     on_rtn_trade(&data);
     raw_writer->write_frame(pTrade, sizeof(CTORATstpTradeField), source_id, MSG_TYPE_LF_RTN_TRADE_TORA, 1, -1);
 }
 
-void TDEngineTora::OnRspQryTradingAccount(CTORATstpTradingAccountField *pTradingAccount, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void TDEngineTORA::OnRspQryTradingAccount(CTORATstpTradingAccountField *pTradingAccount, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     // AccountID?
     LFRspAccountField acc = {};
@@ -407,10 +458,10 @@ void TDEngineTora::OnRspQryTradingAccount(CTORATstpTradingAccountField *pTrading
         {
             pTradingAccount = &empty;
         }
-        int account_idx = status_wrapper->get_current_account_idx();
+        int account_idx = curAccountIdx;
         if (account_idx >= 0)
         {
-            auto& account = account_helper->get_trade_account(account_idx);
+            auto& account = accounts[curAccountIdx];// account_helper->get_trade_account(account_idx);
              
             if (strcmp(account.InvestorID, pTradingAccount->AccountOwner) == 0)
             {
@@ -429,7 +480,7 @@ void TDEngineTora::OnRspQryTradingAccount(CTORATstpTradingAccountField *pTrading
     }
 }
 
-void TDEngineTora::OnRspQryPosition(CTORATstpPositionField *pPosition, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void TDEngineTORA::OnRspQryPosition(CTORATstpPositionField *pPosition, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     // CurrentPosition?
     LFRspPositionField pos = {};
@@ -449,7 +500,7 @@ void TDEngineTora::OnRspQryPosition(CTORATstpPositionField *pPosition, CTORATstp
     }
 }
 
-void TDEngineTora::OnRspQryShareholderAccount(CTORATstpShareholderAccountField *pShareholderAccount, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void TDEngineTORA::OnRspQryShareholderAccount(CTORATstpShareholderAccountField *pShareholderAccount, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     if (nullptr != pRspInfo && pRspInfo->ErrorID != 0)
     {
@@ -465,10 +516,10 @@ void TDEngineTora::OnRspQryShareholderAccount(CTORATstpShareholderAccountField *
             char exchange[9] = {0};
             FromToraExchangeId(exchange, pShareholderAccount->ExchangeID);
 
-            if (status_wrapper->get_current_account_idx() >= 0)
+            if ( curAccountIdx >= 0)
             {
                 KF_LOG_INFO(logger, "[Shareholder]" << " (exchange)" << exchange << " (shareholderID)" << pShareholderAccount->ShareholderID);
-                auto& unit = account_units[status_wrapper->get_current_account_idx()];
+                auto& unit = account_units[curAccountIdx];
                 unit.shareholders[exchange] = pShareholderAccount->ShareholderID;
             }
         }
@@ -476,8 +527,20 @@ void TDEngineTora::OnRspQryShareholderAccount(CTORATstpShareholderAccountField *
 
     if (bIsLast)
     {
-        status_wrapper->on_login();
+        account_units[curAccountIdx].logged_in = true;
+        //status_wrapper->on_login();
     }
 }
 
-EXPORT_ENGINE_TO_PYTHON(libtoratd, TDEngineTora);
+//EXPORT_ENGINE_TO_PYTHON(libtoratd, TDEngineTORA);
+BOOST_PYTHON_MODULE(libtoratd)
+{
+    using namespace boost::python;
+    class_<TDEngineTORA, boost::shared_ptr<TDEngineTORA> >("Engine")
+    .def(init<>())
+    .def("init", &TDEngineTORA::initialize)
+    .def("start", &TDEngineTORA::start)
+    .def("stop", &TDEngineTORA::stop)
+    .def("logout", &TDEngineTORA::logout)
+    .def("wait_for_stop", &TDEngineTORA::wait_for_stop);
+}

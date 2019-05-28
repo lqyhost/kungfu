@@ -63,6 +63,7 @@
 #define WC_CONFIG_KEY_NEED_SETTLE_CONFIRM "NeedSettleConfirm"
 #define WC_CONFIG_KEY_BROKER_ID         "BrokerId"
 #define WC_CONFIG_KEY_USER_ID           "UserId"
+#define WC_CONFIG_KEY_ACCOUNT_ID        "AccountId"
 #define WC_CONFIG_KEY_EXCHANGE_ID       "ExchangeId"
 #define WC_CONFIG_KEY_INVESTOR_ID       "InvestorId"
 #define WC_CONFIG_KEY_FRONT_URI         "FrontUri"

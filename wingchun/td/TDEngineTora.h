@@ -2,53 +2,52 @@
 #define WINGCHUN_TDENGINETORA_H
 
 #include "ITDEngine.h"
-#include "tora/TORATstpTraderApi.h"
+#include "TORATstpTraderApi.h"
 #include "longfist/LFConstants.h"
 
 WC_NAMESPACE_START
 
-struct AccountUnitTora
+struct AccountUnitTORA
 {
     CTORATstpTraderApi* api;
     int front_id;
     int session_id;
+    bool    initialized;
+    bool    connected;
+    bool    logged_in;
+    // some rids
+    int     login_rid;
     bool api_initialized;
     map<string, string> shareholders;
 };
 
-class TDEngineTora : public ITDEngine, public CTORATstpTraderSpi
+class TDEngineTORA : public ITDEngine, public CTORATstpTraderSpi
 {
 public:
     /** init internal journal writer (both raw and send) */
     virtual void init();
     /** for settleconfirm and authenticate setting */
     virtual void pre_load(const json& j_config);
-    virtual bool validate_account_info(const json& j_account) override;
+    //virtual bool validate_account_info(const json& j_account) override;
     virtual TradeAccount load_account(int idx, const json& j_account);
     virtual void resize_accounts(int account_num);
-    virtual string name() const { return "TDEngineTora"; };
 
-    /** init all account related fields */
-    virtual bool try_init(size_t account_idx);
-    /** drop all account related fields and memory */
-    virtual void drop_api(size_t account_idx);
-    /** req connection -> on_connect */
-    virtual bool req_connect(size_t account_idx);
-    /** req disconnect -> on_disconnect */
-    virtual bool req_disconnect(size_t account_idx);
-    /** req login -> on_login */
-    virtual bool req_login(size_t account_idx);
-    /** req logout -> on_logout */
-    virtual bool req_logout(size_t account_idx);
+    virtual void connect(long timeout_nsec);
+    virtual void login(long timeout_nsec);
+    virtual void logout();
+    virtual void release_api();
+    virtual bool is_connected() const;
+    virtual bool is_logged_in() const;
+    virtual string name() const { return "TDEngineTORA"; };
 
     // req functions
-    virtual bool req_investor_position(const LFQryPositionField* data, int account_index, int requestId);
-    virtual bool req_qry_account(const LFQryAccountField* data, int account_index, int requestId);
-    virtual bool req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time);
-    virtual bool req_order_action(const LFOrderActionField* data, int account_index, int requestId, long rcv_time);
+    virtual void req_investor_position(const LFQryPositionField* data, int account_index, int requestId);
+    virtual void req_qry_account(const LFQryAccountField* data, int account_index, int requestId);
+    virtual void req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time);
+    virtual void req_order_action(const LFOrderActionField* data, int account_index, int requestId, long rcv_time);
 
 public:
-    TDEngineTora();
+    TDEngineTORA();
 
 private:
     yijinjing::JournalWriterPtr raw_writer;
@@ -59,7 +58,8 @@ private:
     string gw_inner_ip;
     string gw_outer_ip;
     string hd_sn;
-    vector<AccountUnitTora> account_units;
+    vector<AccountUnitTORA> account_units;
+    int curAccountIdx;
     int req_id;
     bool real_trade;
 

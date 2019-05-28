@@ -84,26 +84,16 @@ inline struct LFInputOrderField parseFrom(const struct XTPOrderInsertInfo& ori)
 
 inline struct XTPOrderInsertInfo parseTo(const struct LFInputOrderField& lf)
 {
-    struct XTPOrderInsertInfo res = {};
-    ToXtpMarket(res.market, lf.ExchangeID);
-    memcpy(res.ticker, lf.InstrumentID, 16);
-    res.order_client_id = (int)atoi(lf.OrderRef);
-    res.price = lf.LimitPrice;
-    res.quantity = lf.Volume;
-    ToXtpDirection(res.side, lf.Direction);
-    if (lf.TimeCondition == LF_CHAR_IOC)
-    {
-        if (lf.VolumeCondition == LF_CHAR_CV)
-            res.price_type == XTP_PRICE_BEST_OR_CANCEL;
-        else
-            res.price_type == XTP_PRICE_ALL_OR_CANCEL;
-    }
-    else
-    {
-        ToXtpPriceType(res.price_type, lf.OrderPriceType);
-    }
-    res.stop_price = lf.StopPrice;
-    return res;
+	struct XTPOrderInsertInfo res = {};
+	ToXtpMarket(res.market, lf.ExchangeID);
+	memcpy(res.ticker, lf.InstrumentID, 16);
+	res.order_client_id = (int)atoi(lf.OrderRef);
+	res.price = lf.LimitPrice;
+	res.quantity = lf.Volume;
+	ToXtpPriceType(res.price_type, lf.OrderPriceType);
+	ToXtpDirection(res.side, lf.Direction);
+	res.stop_price = lf.StopPrice;
+	return res;
 }
 
 inline struct LFRtnOrderField parseFrom(const struct XTPOrderInfo& ori)

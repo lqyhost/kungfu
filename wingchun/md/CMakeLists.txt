@@ -24,3 +24,10 @@ SET(XTP_SOURCE_FILES MDEngineXTP.cpp MDEngineXTP.h IMDEngine.cpp IMDEngine.h ../
 ADD_LIBRARY(xtpmd SHARED ${XTP_SOURCE_FILES})
 TARGET_LINK_LIBRARIES(xtpmd journal kflog xtpquoteapi ${Boost_LIBRARIES})
 INSTALL(TARGETS xtpmd DESTINATION "lib/wingchun")
+
+SET(TORA_SOURCE_FILES MDEngineTORA.cpp MDEngineTORA.h IMDEngine.cpp IMDEngine.h ../base/IEngine.cpp ../base/IEngine.h)
+ADD_LIBRARY(toramd SHARED ${TORA_SOURCE_FILES})
+TARGET_LINK_LIBRARIES(toramd journal kflog mdapi ${Boost_LIBRARIES})
+INSTALL(TARGETS toramd DESTINATION "lib/wingchun")
+
+FILE(COPY test_md.py DESTINATION .)

@@ -3,9 +3,9 @@
 #ifndef LONGFIST_UTIL_TORA_H
 #define LONGFIST_UTIL_TORA_H
 
-#include "../tora/TORATstpUserApiStruct.h"
+#include "../api/tora/20180718/include/TORATstpUserApiStruct.h"
 #include "LFDataStruct.h"
-#include "../tora/level2md/TORATstpUserApiStruct.h"
+#include "../api/tora/20180718/level2md/include/TORATstpUserApiStruct.h"
 #define KUNGFU_LF_TORA
 #include "longfist/transfer_m.h"
 
@@ -133,12 +133,9 @@ inline struct LFL2OrderField parseFrom(const struct CTORATstpLev2OrderDetailFiel
 {
 	struct LFL2OrderField res = {};
 	memcpy(res.InstrumentID, ori.SecurityID, 31);
-	res.OrderGroup = ori.MainSeq;
-	res.OrderIndex = ori.SubSeq;
 	res.Price = ori.Price;
 	res.Volume = ori.Volume;
-	res.Side = ori.Side;
-	res.OrderKind = ori.OrderType;
+	//res.OrderKind = ori.OrderType;
 	return res;
 }
 
@@ -146,14 +143,10 @@ inline struct LFL2TradeField parseFrom(const struct CTORATstpLev2TransactionFiel
 {
 	struct LFL2TradeField res = {};
 	memcpy(res.InstrumentID, ori.SecurityID, 31);
-	res.TradeGroup = ori.MainSeq;
-	res.TradeIndex = ori.SubSeq;
-	res.BidNo = ori.BuyNo;
-	res.AskNo = ori.SellNo;
 	res.Price = ori.TradePrice;
 	res.Volume = ori.TradeVolume;
-	res.Exec = ori.ExecType;
-	res.BSFlag = LF_CHAR_BsUnknown;
+	//res.OrderKind = ori.ExecType;
+	//res.OrderBSFlag = LF_CHAR_BsUnknown;
 	return res;
 }
 
@@ -246,7 +239,7 @@ inline struct LFRtnOrderField parseFrom(const struct CTORATstpOrderField& ori)
 	res.OffsetFlag = LF_CHAR_Open;
 	res.HedgeFlag = LF_CHAR_Speculation;
 	res.OrderStatus = ori.OrderStatus;
-	res.KfOrderID = ori.RequestID;
+	res.RequestID = ori.RequestID;
 	return res;
 }
 

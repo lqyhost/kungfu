@@ -20,6 +20,7 @@ PROJECT(wingchun)
 INCLUDE_DIRECTORIES(../longfist)
 INCLUDE_DIRECTORIES(../longfist/api/ctp/${CTP_VERSION}/include)
 INCLUDE_DIRECTORIES(../longfist/api/xtp/${XTP_VERSION}/include)
+INCLUDE_DIRECTORIES(../longfist/api/tora/${TORA_VERSION}/include)
 
 INCLUDE_DIRECTORIES(../yijinjing/journal)
 INCLUDE_DIRECTORIES(../yijinjing/log)
@@ -30,6 +31,7 @@ INCLUDE_DIRECTORIES(base)
 
 LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../longfist/api/ctp/${CTP_VERSION}/lib)
 LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../longfist/api/xtp/${XTP_VERSION}/lib)
+LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../longfist/api/tora/${TORA_VERSION}/lib)
 LINK_DIRECTORIES(../yijinjing)
 
 ADD_SUBDIRECTORY(md)

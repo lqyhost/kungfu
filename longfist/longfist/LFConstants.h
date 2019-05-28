@@ -9,6 +9,7 @@
 // Index for Sources...
 const short SOURCE_CTP = 1;
 const short SOURCE_XTP = 15;
+const short SOURCE_TORA = 20;
 
 // Exchange names
 #define EXCHANGE_SSE "SSE" //上海证券交易所
@@ -17,6 +18,10 @@ const short SOURCE_XTP = 15;
 #define EXCHANGE_SHFE "SHFE" //上海期货交易所
 #define EXCHANGE_DCE "DCE" //大连商品交易所
 #define EXCHANGE_CZCE "CZCE" //郑州商品交易所
+#define EXCHANGE_INE "INE" //上海国际能源交易中心
+#define EXCHANGE_SSEOPT "SSEOPT" //上交所个股期权
+#define EXCHANGE_SZEOPT "SZEOPT" //深交所个股期权
+#define EXCHANGE_HK "HK" //香港证券交易所
 
 // Exchange ids
 #define EXCHANGE_ID_SSE 1 //上海证券交易所
@@ -25,6 +30,10 @@ const short SOURCE_XTP = 15;
 #define EXCHANGE_ID_SHFE 12 //上海期货交易所
 #define EXCHANGE_ID_DCE 13 //大连商品交易所
 #define EXCHANGE_ID_CZCE 14 //郑州商品交易所
+#define EXCHANGE_ID_INE 15 //上海国际能源交易中心
+#define EXCHANGE_ID_SSEOPT 21 //上交所个股期权
+#define EXCHANGE_ID_SZEOPT 22 //深交所个股期权
+#define EXCHANGE_ID_HK 31 //香港证券交易所
 
 // MsgTypes that used for LF data structure...
 const short MSG_TYPE_LF_MD            = 101;
@@ -60,6 +69,21 @@ const short MSG_TYPE_LF_RSP_POS_XTP   = 15202; // XTPQueryStkPositionRsp from xt
 const short MSG_TYPE_LF_ORDER_XTP     = 15204; // XTPOrderInsertInfo from xtp/xoms_api_struct.h
 const short MSG_TYPE_LF_RTN_ORDER_XTP = 15205; // XTPOrderInfo from xtp/xoms_api_struct.h
 const short MSG_TYPE_LF_RTN_TRADE_XTP = 15206; // XTPTradeReport from xtp/xoms_api_struct.h
+
+// tora, idx=20
+const short MSG_TYPE_LF_MD_TORA       = 20101; // CTORATstpMarketDataField from tora/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_L2_MD_TORA    = 20102; // CTORATstpLev2MarketDataField from tora/level2md/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_L2_INDEX_TORA = 20103; // CTORATstpLev2IndexField from tora/level2md/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_L2_ORDER_TORA = 20104; // CTORATstpLev2OrderDetailField from tora/level2md/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_L2_TRADE_TORA = 20105; // CTORATstpLev2TransactionField from tora/level2md/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_QRY_POS_TORA  = 20201; // CTORATstpQryPositionField from tora/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_RSP_POS_TORA  = 20202; // CTORATstpPositionField from tora/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_ORDER_TORA    = 20204; // CTORATstpInputOrderField from tora/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_RTN_ORDER_TORA = 20205; // CTORATstpOrderField from tora/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_RTN_TRADE_TORA = 20206; // CTORATstpTradeField from tora/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_ORDER_ACTION_TORA = 20207; // CTORATstpInputOrderActionField from tora/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_QRY_ACCOUNT_TORA = 20208; // CTORATstpQryTradingAccountField from tora/TORATstpUserApiStruct.h
+const short MSG_TYPE_LF_RSP_ACCOUNT_TORA = 20209; // CTORATstpTradingAccountField from tora/TORATstpUserApiStruct.h
 
 ///////////////////////////////////
 // LfActionFlagType: 报单操作标志

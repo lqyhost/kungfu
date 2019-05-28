@@ -173,4 +173,45 @@ inline void FromXtpOrderStatus(char& orderStatus, byte ordStatus)
 
 #endif
 
+#ifdef KUNGFU_LF_TORA
+/**************************************************************/
+/*                          TORA                              */
+/**************************************************************/
+inline void FromToraExchangeId(char* exchangeId, TTORATstpExchangeIDType exId)
+{
+    switch (exId)
+    {
+    case TORA_TSTP_EXD_SSE:
+        strcpy(exchangeId, EXCHANGE_SSE);
+        break;
+    case TORA_TSTP_EXD_SZSE:
+        strcpy(exchangeId, EXCHANGE_SZE);
+        break;
+    case TORA_TSTP_EXD_HK:
+        strcpy(exchangeId, EXCHANGE_HK);
+        break;
+    default:
+        break;
+    }
+}
+
+inline void ToToraExchangeId(TTORATstpExchangeIDType& exId, const char* exchangeId)
+{
+    if (strcmp(exchangeId, EXCHANGE_SSE) == 0)
+        exId = TORA_TSTP_EXD_SSE;
+    else if (strcmp(exchangeId, EXCHANGE_SZE) == 0)
+        exId = TORA_TSTP_EXD_SZSE;
+    else if (strcmp(exchangeId, EXCHANGE_HK) == 0)
+        exId = TORA_TSTP_EXD_HK;
+//    else
+//        exId = TORA_TSTP_EXD_COMM;
+}
+
+inline void FromToraPosiDirection(char& posi_direction, TTORATstpMarketIDType marketId)
+{
+    posi_direction = LF_CHAR_Long;
+}
+
+#endif
+
 #endif //LONGFIST_TRANSFER_M_H

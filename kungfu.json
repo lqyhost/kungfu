@@ -1,0 +1,96 @@
+{
+    "md":{
+    "tora": {
+      "Password": "192535",
+      "UserId": "316000032117",
+      "FrontUri": "tcp://101.230.222.25:46402"
+    },
+        "ctp":{
+            "FrontUri":"tcp://180.168.146.187:10011",
+            "UserId":"118036",
+            "BrokerId":"9999",
+            "Password":"wangxi123"
+        }
+    },
+    "td":{
+        "ctp":{
+            "FrontUri":"tcp://180.168.146.187:10001",
+            "NeedAuth":false,
+            "NeedSettleConfirm":true,
+            "accounts":[
+                {
+                    "info":{
+                        "UserId":"118036",
+                        "InvestorId":"118036",
+                        "BrokerId":"9999",
+                        "Password":"wangxi123"
+                    },
+                    "clients":[],
+                    "is_default":true
+                }
+            ],
+            "FeeSetup":{
+                "stock":{
+                    "type":"amount",
+                    "fee_multi":0.0003,
+                    "ctr_multi":1,
+                    "min_fee":0
+                },
+                "future":{
+                    "type":"amount",
+                    "fee_multi":[
+                        0.000023,
+                        0.00069,
+                        0.000023
+                    ],
+                    "ctr_multi":200,
+                    "min_fee":0
+                },
+                "future_exotic":{}
+            }
+        },
+        "tora":{
+            "FrontUri": "tcp://101.230.222.17:9500",
+            "RealTrade": true,
+            "Mac":"",
+            "IP":"",
+            "GatewayMac":"",
+            "GatewayInnerIP":"",
+            "GatewayOuterIP":"",
+            "HDSerial":"",
+            "accounts":[
+                {
+                    "info":{
+                        "UserId":"316000032117",
+                        "AccountId": "316000032117",
+                        "InvestorId":"316000032117",
+                        "BrokerId":"9999",
+                        "Password":"192535"
+                    },
+                    "clients":[],
+                    "is_default":true
+                }
+            ],
+            "FeeSetup":{
+                "stock":{
+                    "type":"amount",
+                    "fee_multi":0.0003,
+                    "ctr_multi":1,
+                    "min_fee":0
+                },
+                "future":{
+                    "type":"amount",
+                    "fee_multi":[
+                        0.000023,
+                        0.00069,
+                        0.000023
+                    ],
+                    "ctr_multi":200,
+                    "min_fee":0
+                },
+                "future_exotic":{}
+            }
+        }
+
+    }
+}

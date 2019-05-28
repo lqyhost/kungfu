@@ -22,3 +22,6 @@ INSTALL(DIRECTORY api/ctp/${CTP_VERSION}/lib/ DESTINATION "lib64/api")
 
 INSTALL(DIRECTORY api/xtp/${XTP_VERSION}/include/ DESTINATION "include/xtp")
 INSTALL(DIRECTORY api/xtp/${XTP_VERSION}/lib/ DESTINATION "lib64/api")
+
+INSTALL(DIRECTORY api/tora/${TORA_VERSION}/include/ DESTINATION "include/tora")
+INSTALL(DIRECTORY api/tora/${TORA_VERSION}/lib/ DESTINATION "lib64/api")

@@ -2,34 +2,28 @@
 #define WINGCHUN_MDENGINETORA_H
 
 #include "IMDEngine.h"
-#include "tora/TORATstpMdApi.h"
+#include "longfist/LFConstants.h"
+#include "TORATstpMdApi.h"
 
 WC_NAMESPACE_START
 
-class MDEngineTora : public IMDEngine, public CTORATstpMdSpi
+class MDEngineTORA : public IMDEngine, public CTORATstpMdSpi
 {
 public:
     /** load internal information from config json */
     virtual void load(const json& j_config);
-    virtual void subscribeMarketData(const vector<string>& instruments, const vector<string>& markets);
-    virtual string name() const { return "MDEngineTora"; };
+    virtual void connect(long timeout_nsec);
+    virtual void login(long timeout_nsec);
+    virtual void logout();
+    virtual void release_api();
+    virtual bool is_connected() const { return connected; };
+    virtual bool is_logged_in() const { return logged_in; };
 
-    // IStatusUtil
-    /** init all account related fields */
-    virtual bool try_init(size_t account_idx);
-    /** drop all account related fields and memory */
-    virtual void drop_api(size_t account_idx);
-    /** req connection -> on_connect */
-    virtual bool req_connect(size_t account_idx);
-    /** req disconnect -> on_disconnect */
-    virtual bool req_disconnect(size_t account_idx);
-    /** req login -> on_login */
-    virtual bool req_login(size_t account_idx);
-    /** req logout -> on_logout */
-    virtual bool req_logout(size_t account_idx);
+    virtual void subscribeMarketData(const vector<string>& instruments, const vector<string>& markets);
+    virtual string name() const { return "MDEngineTORA"; };
 
 public:
-    MDEngineTora();
+    MDEngineTORA();
 
 private:
     CTORATstpMdApi* api;
@@ -37,8 +31,9 @@ private:
     string front_uri;
     string user_id;
     string password;
-
-    int req_id;
+    bool connected;
+    bool logged_in;
+    int reqId;
 
 public:
     virtual void OnFrontConnected();
@@ -50,7 +45,7 @@ public:
     virtual void OnRtnDepthMarketData(CTORATstpMarketDataField *pDepthMarketData);
 };
 
-DECLARE_PTR(MDEngineTora);
+DECLARE_PTR(MDEngineTORA);
 
 WC_NAMESPACE_END
 

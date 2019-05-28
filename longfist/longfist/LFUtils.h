@@ -53,6 +53,8 @@ inline JournalPair getMdJournalPair(short source)
 			return {"/shared/kungfu/journal/MD/CTP/", "MD_CTP"};
 		case 15:
 			return {"/shared/kungfu/journal/MD/XTP/", "MD_XTP"};
+		case 20:
+			return {"/shared/kungfu/journal/MD/TORA/", "MD_TORA"};
 		default:
 			return {"", ""};
 	}
@@ -66,6 +68,8 @@ inline JournalPair getMdRawJournalPair(short source)
 			return {"/shared/kungfu/journal/MD_RAW/CTP/", "MDRAW_CTP"};
 		case 15:
 			return {"/shared/kungfu/journal/MD_RAW/XTP/", "MDRAW_XTP"};
+		case 20:
+			return {"/shared/kungfu/journal/MD_RAW/TORA/", "MDRAW_TORA"};
 		default:
 			return {"", ""};
 	}
@@ -79,6 +83,8 @@ inline JournalPair getTdJournalPair(short source)
 			return {"/shared/kungfu/journal/TD/CTP/", "TD_CTP"};
 		case 15:
 			return {"/shared/kungfu/journal/TD/XTP/", "TD_XTP"};
+		case 20:
+			return {"/shared/kungfu/journal/TD/TORA/", "TD_TORA"};
 		default:
 			return {"", ""};
 	}
@@ -92,6 +98,8 @@ inline JournalPair getTdSendJournalPair(short source)
 			return {"/shared/kungfu/journal/TD_SEND/CTP/", "TD_SEND_CTP"};
 		case 15:
 			return {"/shared/kungfu/journal/TD_SEND/XTP/", "TD_SEND_XTP"};
+		case 20:
+			return {"/shared/kungfu/journal/TD_SEND/TORA/", "TD_SEND_TORA"};
 		default:
 			return {"", ""};
 	}
@@ -105,6 +113,8 @@ inline JournalPair getTdRawJournalPair(short source)
 			return {"/shared/kungfu/journal/TD_RAW/CTP/", "TD_RAW_CTP"};
 		case 15:
 			return {"/shared/kungfu/journal/TD_RAW/XTP/", "TD_RAW_XTP"};
+		case 20:
+			return {"/shared/kungfu/journal/TD_RAW/TORA/", "TD_RAW_TORA"};
 		default:
 			return {"", ""};
 	}
@@ -118,6 +128,8 @@ inline JournalPair getTdQJournalPair(short source)
 			return {"/shared/kungfu/journal/TD_Q/CTP/", "TD_Q_CTP"};
 		case 15:
 			return {"/shared/kungfu/journal/TD_Q/XTP/", "TD_Q_XTP"};
+		case 20:
+			return {"/shared/kungfu/journal/TD_Q/TORA/", "TD_Q_TORA"};
 		default:
 			return {"", ""};
 	}
