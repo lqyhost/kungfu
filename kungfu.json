@@ -52,19 +52,17 @@
         "tora":{
             "FrontUri": "tcp://101.230.222.17:9500",
             "RealTrade": true,
-            "Mac":"",
-            "IP":"",
-            "GatewayMac":"",
-            "GatewayInnerIP":"",
-            "GatewayOuterIP":"",
-            "HDSerial":"",
+            "Mac":"02:42:ac:11:00:06",
+            "IP":"172.17.0.6",
+            "GatewayMac":"02:42:ac:11:00:06",
+            "GatewayInnerIP":"172.17.0.6",
+            "GatewayOuterIP":"36.110.14.214",
+            "HDSerial":"600304801aa5f30222391a641e920f26",
             "accounts":[
                 {
                     "info":{
                         "UserId":"316000032117",
-                        "AccountId": "316000032117",
                         "InvestorId":"316000032117",
-                        "BrokerId":"9999",
                         "Password":"192535"
                     },
                     "clients":[],

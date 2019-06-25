@@ -52,15 +52,14 @@ bool TDEngineTORA::validate_account_info(const json& j_config)
 TradeAccount TDEngineTORA::load_account(int idx, const json& j_account)
 {
     // for tora td, we use InvestorId as UserId, AccountId as InvestorId
-    string user_id = j_account["InvestorId"].get<string>();
-    string investor_id = j_account[WC_CONFIG_KEY_ACCOUNT_ID].get<string>();
+    string user_id = j_account[WC_CONFIG_KEY_USER_ID].get<string>();
+    string investor_id = j_account[WC_CONFIG_KEY_INVESTOR_ID].get<string>();
     string password = j_account[WC_CONFIG_KEY_PASSWORD].get<string>();
 
     auto& unit = account_units[idx];
     unit.api = nullptr;
     unit.front_id = -1;
     unit.session_id = -1;
-    unit.api_initialized = false;
     unit.initialized = false;
     unit.connected = false;
     unit.logged_in = false;
@@ -84,7 +83,7 @@ void TDEngineTORA::release_api()
     for (size_t idx = 0; idx < account_units.size(); idx++)
     {
         auto& unit = account_units[idx];
-        unit.api_initialized = false;
+        unit.initialized = false;
         if (nullptr != unit.api)
         {
             unit.api->Release();
@@ -152,6 +151,7 @@ void TDEngineTORA::login(long timeout_nsec)
     KF_LOG_INFO(logger, "[request] login "<<account_units.size() );
     for (size_t idx = 0; idx < account_units.size(); idx ++)
     {
+        curAccountIdx = idx;
         KF_LOG_INFO(logger, "[unit.api] "<<(account_units[idx].api != nullptr)<<" "<<idx );
         AccountUnitTORA& unit = account_units[idx];
         TradeAccount& account = accounts[idx];
@@ -164,18 +164,18 @@ void TDEngineTORA::login(long timeout_nsec)
             strncpy(req.LogInAccount, account.InvestorID, 21);
             strncpy(req.Password, account.Password, 41);
 
-            strncpy(req.MacAddress, "", 21);
-            strncpy(req.ClientIPAddress, "", 16);
-            strncpy(req.GWMacAddress, "", 21);
-            strncpy(req.GWInnerIPAddress, "", 16);
-            strncpy(req.GWOuterIPAddress, "", 16);
-            strncpy(req.HDSerial, "", 33);
+            strncpy(req.MacAddress, mac.c_str(), 21);
+            strncpy(req.ClientIPAddress, ip.c_str(), 16);
+            strncpy(req.GWMacAddress, gw_mac.c_str(), 21);
+            strncpy(req.GWInnerIPAddress, gw_inner_ip.c_str(), 16);
+            strncpy(req.GWOuterIPAddress, gw_outer_ip.c_str(), 16);
+            strncpy(req.HDSerial, hd_sn.c_str(), 33);
 
             if (unit.api != nullptr)
             {
                 KF_LOG_ERROR(logger, "[request] unit.api != nullptr" << " (Uid)" << req.LogInAccount);
                 int rid = unit.api->ReqUserLogin(&req, request_id++);
-                account_units[idx].login_rid = request_id-1;
+                account_units[idx].login_rid = request_id - 1;
                 if  (rid)
                 {
                     KF_LOG_ERROR(logger, "[request] login failed!" << " (Uid)" << req.LogInAccount);
@@ -188,7 +188,8 @@ void TDEngineTORA::login(long timeout_nsec)
             }
 
             long start_time = yijinjing::getNanoTime();
-            while (!unit.logged_in && yijinjing::getNanoTime() - start_time < timeout_nsec)
+            //while (!unit.logged_in && yijinjing::getNanoTime() - start_time < timeout_nsec)
+            while (!unit.logged_in && yijinjing::getNanoTime() - start_time <  timeout_nsec)
             {
             }
         }
@@ -356,8 +357,21 @@ void TDEngineTORA::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginField
 
                 req.TradingCodeClass = TORA_TSTP_CIDT_Normal;
                 int rid = unit.api->ReqQryShareholderAccount(&req, request_id++);
-                KF_LOG_INFO(logger,"rid: "<<rid);
+                KF_LOG_INFO(logger,"rid: "<<request_id);
+                long start_time = yijinjing::getNanoTime();
+                while (((unit.shareholders[EXCHANGE_SSE] == "") || (unit.shareholders[EXCHANGE_SZE] == "")) && yijinjing::getNanoTime() - start_time < 5*1e9)
+                {}
+                if ((unit.shareholders[EXCHANGE_SSE] == "") || (unit.shareholders[EXCHANGE_SZE] == ""))
+                {
+                    KF_LOG_INFO(logger,"shareholders did not get: "<<EXCHANGE_SSE<<unit.shareholders[EXCHANGE_SSE]<<EXCHANGE_SZE<<unit.shareholders[EXCHANGE_SZE]);
+                }
+                else
+                {
+                    KF_LOG_INFO(logger,"shareholders: sse: "<<unit.shareholders[EXCHANGE_SSE]<<"sze: "<<unit.shareholders[EXCHANGE_SZE]);
+                }
+                
             }
+            //todo
         }
     }
 }
@@ -477,6 +491,7 @@ void TDEngineTORA::OnRspQryTradingAccount(CTORATstpTradingAccountField *pTrading
                 on_rsp_account(&acc, true, nRequestID);
             }
         }
+        //to do
     }
 }
 
@@ -524,10 +539,10 @@ void TDEngineTORA::OnRspQryShareholderAccount(CTORATstpShareholderAccountField *
             }
         }
     }
-
     if (bIsLast)
     {
         account_units[curAccountIdx].logged_in = true;
+        KF_LOG_INFO(logger, "[bIsLast]"<<curAccountIdx);
         //status_wrapper->on_login();
     }
 }

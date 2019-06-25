@@ -17,7 +17,7 @@ struct AccountUnitTORA
     bool    logged_in;
     // some rids
     int     login_rid;
-    bool api_initialized;
+    //bool api_initialized;
     map<string, string> shareholders;
 };
 
