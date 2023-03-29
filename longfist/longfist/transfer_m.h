@@ -131,9 +131,9 @@ inline void ToXtpPriceType(XTP_PRICE_TYPE& xtp_type, char order_price_type)
 
 inline void FromXtpDirection(char& direction, XTP_SIDE_TYPE xtp_side)
 {
-    if (xtp_side == XTP_SIDE_BUY || xtp_side == XTP_SIDE_BUY_OPEN || xtp_side == XTP_SIDE_BUY_CLOSE)
+    if (xtp_side == XTP_SIDE_BUY )
         direction = LF_CHAR_Buy;
-    else if (xtp_side == XTP_SIDE_SELL || xtp_side == XTP_SIDE_SELL_OPEN || xtp_side == XTP_SIDE_SELL_CLOSE)
+    else if (xtp_side == XTP_SIDE_SELL)
         direction = LF_CHAR_Sell;
     else
         direction = '\0';
