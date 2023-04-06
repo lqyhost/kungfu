@@ -3,8 +3,8 @@
 #ifndef LONGFIST_UTIL_XTP_H
 #define LONGFIST_UTIL_XTP_H
 
-#include "../api/xtp/XTP_API_20171115_1.1.16.9/include/xoms_api_struct.h"
-#include "../api/xtp/XTP_API_20171115_1.1.16.9/include/xquote_api_struct.h"
+#include "../api/xtp/XTP_API_20220402_2_2_33_5/include/xoms_api_struct.h"
+#include "../api/xtp/XTP_API_20220402_2_2_33_5/include/xquote_api_struct.h"
 #include "LFDataStruct.h"
 #define KUNGFU_LF_XTP
 #include "longfist/transfer_m.h"

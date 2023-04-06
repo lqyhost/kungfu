@@ -45,6 +45,14 @@ void TDEngineXTP::pre_load(const json& j_config)
     front_port = j_config["Port"].get<int>();
     account_key = j_config["Key"].get<string>();
     client_id = j_config["ClientId"].get<int>();
+    if (j_config.find("IsCredit") != j_config.end()
+        && j_config["IsCredit"].get<bool>())
+    {
+        is_credit = true;
+        KF_LOG_INFO(logger, "[ATTENTION] is creadit account");
+    }
+    else
+        is_credit = false;
 }
 
 void TDEngineXTP::resize_accounts(int account_num)
@@ -200,6 +208,10 @@ void TDEngineXTP::req_qry_account(const LFQryAccountField *data, int account_ind
 void TDEngineXTP::req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time)
 {
     struct XTPOrderInsertInfo req = parseTo(*data);
+    if (is_credit)
+    {
+        req.business_type = XTP_BUSINESS_TYPE_MARGIN;
+    }
     KF_LOG_DEBUG(logger, "[req_order_insert]" << " (rid)" << requestId
                                               << " (Tid)" << req.ticker
                                               << " (OrderRef)" << req.order_client_id);

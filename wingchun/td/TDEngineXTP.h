@@ -78,6 +78,7 @@ private:
     string front_ip;
     int front_port;
     int client_id;
+    bool is_credit;
     vector<AccountUnitXTP> account_units;
     map<int, long> xtp_ids;
 
