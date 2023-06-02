@@ -36,6 +36,8 @@ class MsgTypes:
     ORDER_ACTION = 207
     QRY_ACCOUNT = 208
     RSP_ACCOUNT = 209
+    QRY_CREDIT = 210
+    RSP_CREDIT = 211
 
 ###################################
 # LfActionFlagType: 报单操作标志

@@ -77,7 +77,7 @@ inline struct LFInputOrderField parseFrom(const struct XTPOrderInsertInfo& ori)
 	res.LimitPrice = ori.price;
 	res.Volume = ori.quantity;
 	FromXtpPriceType(res.OrderPriceType, ori.price_type);
-	FromXtpDirection(res.Direction, ori.side);
+	FromXtpDirection(res.Direction, res.OffsetFlag, ori.side);
 	res.StopPrice = ori.stop_price;
 	return res;
 }
@@ -102,7 +102,7 @@ inline struct XTPOrderInsertInfo parseTo(const struct LFInputOrderField& lf)
 		ToXtpPriceType(res.price_type, lf.OrderPriceType);
 	}
 	//ToXtpPriceType(res.price_type, lf.OrderPriceType);
-	ToXtpDirection(res.side, lf.Direction);
+	ToXtpDirection(res.side, lf.Direction, lf.OffsetFlag);
 	res.stop_price = lf.StopPrice;
 	return res;
 }
@@ -118,7 +118,7 @@ inline struct LFRtnOrderField parseFrom(const struct XTPOrderInfo& ori)
 	res.VolumeTotal = ori.qty_left;
 	res.VolumeTotalOriginal = ori.quantity;
 	FromXtpPriceType(res.OrderPriceType, ori.price_type);
-	FromXtpDirection(res.Direction, ori.side);
+	FromXtpDirection(res.Direction, res.OffsetFlag, ori.side);
 	FromXtpOrderStatus(res.OrderStatus, ori.order_status);
 	return res;
 }
@@ -136,7 +136,31 @@ inline struct LFRtnTradeField parseFrom(const struct XTPTradeReport& ori)
 	res.Volume = ori.quantity;
 	TradingDayFromLong(res.TradingDay, ori.trade_time);
 	UpdateTimeFromLong(res.TradeTime, ori.trade_time);
-	FromXtpDirection(res.Direction, ori.side);
+	FromXtpDirection(res.Direction, res.OffsetFlag, ori.side);
+	return res;
+}
+
+inline struct LFRspAccountField parseFrom(const struct XTPQueryAssetRsp& ori)
+{
+	struct LFRspAccountField res = {};
+	res.FrozenCash = ori.withholding_amount;
+	res.CurrMargin = (double)(ori.fund_buy_amount + ori.fund_sell_amount);
+	res.Commission = (double)(ori.fund_buy_fee + ori.fund_sell_fee);
+	res.Available = ori.buying_power;
+	res.MarketValue = ori.security_asset;
+	res.Credit = ori.repay_stock_aval_banlance;
+	return res;
+}
+
+inline struct LFRspCreditAccountField parseFrom(const struct XTPCrdFundInfo& ori)
+{
+	struct LFRspCreditAccountField res = {};
+	// res.FrozenCash = ori.withholding_amount;
+	// res.CurrMargin = (double)(ori.fund_buy_amount + ori.fund_sell_amount);
+	// res.Commission = (double)(ori.fund_buy_fee + ori.fund_sell_fee);
+	// res.Available = ori.buying_power;
+	// res.MarketValue = ori.security_asset;
+	res.Credit = ori.guaranty;
 	return res;
 }
 

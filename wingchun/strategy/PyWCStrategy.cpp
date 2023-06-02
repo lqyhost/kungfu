@@ -122,6 +122,29 @@ void PyWCStrategy::on_rsp_position(const PosHandlerPtr posMap, int request_id, s
     }
 }
 
+void PyWCStrategy::on_account(const  LFRspAccountField* data, int request_id, short source, long rcv_time)
+{
+    bp::object& obj = py_on_data[MSG_TYPE_LF_RSP_ACCOUNT];
+    if (obj != bp::object() && IWCDataProcessor::signal_received <= 0)
+    {
+        START_PYTHON_FUNC_CALLING
+        obj((uintptr_t)data, request_id, source, rcv_time);
+        END_PYTHON_FUNC_CALLING
+    }
+}
+
+void PyWCStrategy::on_credit(const  LFRspCreditAccountField* data, int request_id, short source, long rcv_time)
+{
+    bp::object& obj = py_on_data[MSG_TYPE_LF_RSP_CREDIT];
+    if (obj != bp::object() && IWCDataProcessor::signal_received <= 0)
+    {
+        START_PYTHON_FUNC_CALLING
+        obj((uintptr_t)data, request_id, source, rcv_time);
+        END_PYTHON_FUNC_CALLING
+    }
+}
+
+
 void PyWCStrategy::on_switch_day(long rcv_time)
 {
     if (py_on_switch_day != bp::object() && IWCDataProcessor::signal_received <= 0)
@@ -207,6 +230,8 @@ BOOST_PYTHON_MODULE(libwingchunstrategy)
     .def("insert_fok_order", &PyWCStrategy::insert_fok_order_py, (bp::arg("source"), bp::arg("ticker"), bp::arg("exchange_id"), bp::arg("price"), bp::arg("volume"), bp::arg("direction"), bp::arg("offset")))
     .def("insert_fak_order", &PyWCStrategy::insert_fak_order_py, (bp::arg("source"), bp::arg("ticker"), bp::arg("exchange_id"), bp::arg("price"), bp::arg("volume"), bp::arg("direction"), bp::arg("offset")))
     .def("req_position", &PyWCStrategy::req_position, (bp::arg("source")))
+    .def("req_account", &PyWCStrategy::req_account, (bp::arg("source")))
+    .def("req_credit", &PyWCStrategy::req_credit, (bp::arg("source")))
     .def("cancel_order", &PyWCStrategy::cancel_order, (bp::arg("source"), bp::arg("order_id")))
     .def("set_on_error", &PyWCStrategy::set_on_error, (bp::arg("func")));
 

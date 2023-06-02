@@ -245,6 +245,7 @@ struct LFQryPositionField
 	char_9   	ExchangeID;            //交易所代码
 };
 
+
 struct LFRspPositionField
 {
 	char_31              	InstrumentID;          //合约代码
@@ -350,7 +351,47 @@ struct LFQryAccountField
 	char_19  	InvestorID;            //投资者代码
 };
 
+struct LFQryCreditAccountField
+{
+	char_11  	BrokerID;              //经纪公司代码
+	char_19  	InvestorID;            //投资者代码
+};
+
 struct LFRspAccountField
+{
+	char_11  	BrokerID;              //经纪公司代码
+	char_19  	InvestorID;            //投资者代码
+	double   	PreMortgage;           //上次质押金额
+	double   	PreCredit;             //上次信用额度
+	double   	PreDeposit;            //上次存款额
+	double   	preBalance;            //上次结算准备金
+	double   	PreMargin;             //上次占用的保证金
+	double   	Deposit;               //入金金额
+	double   	Withdraw;              //出金金额
+	double   	FrozenMargin;          //冻结的保证金（报单未成交冻结的保证金）
+	double   	FrozenCash;            //冻结的资金（报单未成交冻结的总资金）
+	double   	FrozenCommission;      //冻结的手续费（报单未成交冻结的手续费）
+	double   	CurrMargin;            //当前保证金总额
+	double   	CashIn;                //资金差额
+	double   	Commission;            //手续费
+	double   	CloseProfit;           //平仓盈亏
+	double   	PositionProfit;        //持仓盈亏
+	double   	Balance;               //结算准备金
+	double   	Available;             //可用资金
+	double   	WithdrawQuota;         //可取资金
+	double   	Reserve;               //基本准备金
+	char_9   	TradingDay;            //交易日
+	double   	Credit;                //信用额度
+	double   	Mortgage;              //质押金额
+	double   	ExchangeMargin;        //交易所保证金
+	double   	DeliveryMargin;        //投资者交割保证金
+	double   	ExchangeDeliveryMargin;   //交易所交割保证金
+	double   	ReserveBalance;        //保底期货结算准备金
+	double   	Equity;                //当日权益
+	double   	MarketValue;           //账户市值
+};
+
+struct LFRspCreditAccountField
 {
 	char_11  	BrokerID;              //经纪公司代码
 	char_19  	InvestorID;            //投资者代码

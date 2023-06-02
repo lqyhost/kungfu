@@ -321,7 +321,11 @@ namespace LF_UTIL_PRINTER_CTP
 #define PRINT_QRY_ACCOUNT(ptr) ""\
 	 << std::setw(20) << "BrokerID:" << std::setw(6) << "(c11)" << " " << ptr->BrokerID << std::endl \
 	 << std::setw(20) << "InvestorID:" << std::setw(6) << "(c19)" << " " << ptr->InvestorID << std::endl \
-	
+
+#define PRINT_QRY_CREADIT(ptr) ""\
+	 << std::setw(20) << "BrokerID:" << std::setw(6) << "(c11)" << " " << ptr->BrokerID << std::endl \
+	 << std::setw(20) << "InvestorID:" << std::setw(6) << "(c19)" << " " << ptr->InvestorID << std::endl \
+
 #define PRINT_RSP_ACCOUNT(ptr) ""\
 	 << std::setw(20) << "BrokerID:" << std::setw(6) << "(c11)" << " " << ptr->BrokerID << std::endl \
 	 << std::setw(20) << "InvestorID:" << std::setw(6) << "(c19)" << " " << ptr->InvestorID << std::endl \
@@ -354,6 +358,38 @@ namespace LF_UTIL_PRINTER_CTP
 	 << std::setw(20) << "Equity:" << std::setw(6) << "(d)" << " " << ptr->Equity << std::endl \
 	 << std::setw(20) << "MarketValue:" << std::setw(6) << "(d)" << " " << ptr->MarketValue << std::endl \
 	
+
+#define PRINT_RSP_CREADIT(ptr) ""\
+	 << std::setw(20) << "BrokerID:" << std::setw(6) << "(c11)" << " " << ptr->BrokerID << std::endl \
+	 << std::setw(20) << "InvestorID:" << std::setw(6) << "(c19)" << " " << ptr->InvestorID << std::endl \
+	 << std::setw(20) << "PreMortgage:" << std::setw(6) << "(d)" << " " << ptr->PreMortgage << std::endl \
+	 << std::setw(20) << "PreCredit:" << std::setw(6) << "(d)" << " " << ptr->PreCredit << std::endl \
+	 << std::setw(20) << "PreDeposit:" << std::setw(6) << "(d)" << " " << ptr->PreDeposit << std::endl \
+	 << std::setw(20) << "preBalance:" << std::setw(6) << "(d)" << " " << ptr->preBalance << std::endl \
+	 << std::setw(20) << "PreMargin:" << std::setw(6) << "(d)" << " " << ptr->PreMargin << std::endl \
+	 << std::setw(20) << "Deposit:" << std::setw(6) << "(d)" << " " << ptr->Deposit << std::endl \
+	 << std::setw(20) << "Withdraw:" << std::setw(6) << "(d)" << " " << ptr->Withdraw << std::endl \
+	 << std::setw(20) << "FrozenMargin:" << std::setw(6) << "(d)" << " " << ptr->FrozenMargin << std::endl \
+	 << std::setw(20) << "FrozenCash:" << std::setw(6) << "(d)" << " " << ptr->FrozenCash << std::endl \
+	 << std::setw(20) << "FrozenCommission:" << std::setw(6) << "(d)" << " " << ptr->FrozenCommission << std::endl \
+	 << std::setw(20) << "CurrMargin:" << std::setw(6) << "(d)" << " " << ptr->CurrMargin << std::endl \
+	 << std::setw(20) << "CashIn:" << std::setw(6) << "(d)" << " " << ptr->CashIn << std::endl \
+	 << std::setw(20) << "Commission:" << std::setw(6) << "(d)" << " " << ptr->Commission << std::endl \
+	 << std::setw(20) << "CloseProfit:" << std::setw(6) << "(d)" << " " << ptr->CloseProfit << std::endl \
+	 << std::setw(20) << "PositionProfit:" << std::setw(6) << "(d)" << " " << ptr->PositionProfit << std::endl \
+	 << std::setw(20) << "Balance:" << std::setw(6) << "(d)" << " " << ptr->Balance << std::endl \
+	 << std::setw(20) << "Available:" << std::setw(6) << "(d)" << " " << ptr->Available << std::endl \
+	 << std::setw(20) << "WithdrawQuota:" << std::setw(6) << "(d)" << " " << ptr->WithdrawQuota << std::endl \
+	 << std::setw(20) << "Reserve:" << std::setw(6) << "(d)" << " " << ptr->Reserve << std::endl \
+	 << std::setw(20) << "TradingDay:" << std::setw(6) << "(c9)" << " " << ptr->TradingDay << std::endl \
+	 << std::setw(20) << "Credit:" << std::setw(6) << "(d)" << " " << ptr->Credit << std::endl \
+	 << std::setw(20) << "Mortgage:" << std::setw(6) << "(d)" << " " << ptr->Mortgage << std::endl \
+	 << std::setw(20) << "ExchangeMargin:" << std::setw(6) << "(d)" << " " << ptr->ExchangeMargin << std::endl \
+	 << std::setw(20) << "DeliveryMargin:" << std::setw(6) << "(d)" << " " << ptr->DeliveryMargin << std::endl \
+	 << std::setw(20) << "ExchangeDeliveryMargin:" << std::setw(6) << "(d)" << " " << ptr->ExchangeDeliveryMargin << std::endl \
+	 << std::setw(20) << "ReserveBalance:" << std::setw(6) << "(d)" << " " << ptr->ReserveBalance << std::endl \
+	 << std::setw(20) << "Equity:" << std::setw(6) << "(d)" << " " << ptr->Equity << std::endl \
+	 << std::setw(20) << "MarketValue:" << std::setw(6) << "(d)" << " " << ptr->MarketValue << std::endl \
 
 /*****************************************/
 // Macro to print struct content for ctp
@@ -615,10 +651,22 @@ inline void printData(const void* data, short msg_type)
 			std::cout << PRINT_QRY_ACCOUNT(ptr);
 			break;
 		}
+		case MSG_TYPE_LF_QRY_CREDIT:
+		{
+			LFQryCreditAccountField* ptr = (LFQryCreditAccountField*)data;
+			std::cout << PRINT_QRY_ACCOUNT(ptr);
+			break;
+		}
 		case MSG_TYPE_LF_RSP_ACCOUNT:
 		{
 			LFRspAccountField* ptr = (LFRspAccountField*)data;
 			std::cout << PRINT_RSP_ACCOUNT(ptr);
+			break;
+		}
+		case MSG_TYPE_LF_RSP_CREDIT:
+		{
+			LFRspCreditAccountField* ptr = (LFRspCreditAccountField*)data;
+			std::cout << PRINT_RSP_CREADIT(ptr);
 			break;
 		}
 		case MSG_TYPE_LF_MD_CTP:

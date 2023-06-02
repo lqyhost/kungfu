@@ -75,6 +75,8 @@ public:
     int insert_fok_order(short source, string instrument_id, string exchange_id, double price, int volume, LfDirectionType direction, LfOffsetFlagType offset);
     int insert_fak_order(short source, string instrument_id, string exchange_id, double price, int volume, LfDirectionType direction, LfOffsetFlagType offset);
     int req_position(short source);
+    int req_account(short source);
+    int req_credit(short source);
     int cancel_order(short source, int order_id);
 
     /** callback */

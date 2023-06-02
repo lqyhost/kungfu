@@ -139,6 +139,7 @@ public:
     virtual void req_investor_position(const LFQryPositionField* data, int account_index, int requestId) = 0;
     /** request account info */
     virtual void req_qry_account(const LFQryAccountField* data, int account_index, int requestId) = 0;
+    virtual void req_qry_credit(const LFQryCreditAccountField* data, int account_index, int requestId) = 0;
     /** insert order */
     virtual void req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time) = 0;
     /** request order action (only cancel is accomplished) */
@@ -154,6 +155,8 @@ public:
                              int errorId=0, const char* errorMsg=nullptr);
     /** on rsp account info, engine (on_data) */
     void on_rsp_account(const LFRspAccountField* account, bool isLast, int requestId,
+                        int errorId=0, const char* errorMsg=nullptr);
+    void on_rsp_credit(const LFRspCreditAccountField* account, bool isLast, int requestId,
                         int errorId=0, const char* errorMsg=nullptr);
     /** on rtn order, engine (on_data) */
     void on_rtn_order(const LFRtnOrderField* rtn_order);

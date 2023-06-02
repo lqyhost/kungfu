@@ -129,25 +129,56 @@ inline void ToXtpPriceType(XTP_PRICE_TYPE& xtp_type, char order_price_type)
         xtp_type = XTP_PRICE_BEST5_OR_CANCEL;
 }
 
-inline void FromXtpDirection(char& direction, XTP_SIDE_TYPE xtp_side)
+inline void FromXtpDirection(char& direction, char& offset, XTP_SIDE_TYPE xtp_side)
 {
     if (xtp_side == XTP_SIDE_BUY )
+    {
         direction = LF_CHAR_Buy;
+        offset = LF_CHAR_Open;
+    }
     else if (xtp_side == XTP_SIDE_SELL)
+    {
         direction = LF_CHAR_Sell;
+        offset = LF_CHAR_Open;
+    }
+    else if (xtp_side == XTP_SIDE_MARGIN_TRADE)
+    {
+        direction = LF_CHAR_Buy;
+        offset = LF_CHAR_Close;
+    }
+    else if (xtp_side == XTP_SIDE_REPAY_MARGIN)
+    {
+        direction = LF_CHAR_Sell;
+        offset = LF_CHAR_Close;
+    }
     else
         direction = '\0';
 }
 
-inline void ToXtpDirection(XTP_SIDE_TYPE& xtp_side, char direction)
+inline void ToXtpDirection(XTP_SIDE_TYPE& xtp_side, char direction, char offset)
 {
-    if (direction == LF_CHAR_Buy)
-        xtp_side = XTP_SIDE_BUY;
-    else if (direction == LF_CHAR_Sell)
-        xtp_side = XTP_SIDE_SELL;
+    if (offset == LF_CHAR_Open)
+    {
+        std::cout<<"offset"<<offset<<std::endl;
+        if (direction == LF_CHAR_Buy)
+            xtp_side = XTP_SIDE_BUY;
+        else if (direction == LF_CHAR_Sell)
+            xtp_side = XTP_SIDE_SELL;
+        else
+            xtp_side = XTP_SIDE_UNKNOWN;
+    }
     else
-        xtp_side = XTP_SIDE_UNKNOWN;
+    {
+        std::cout<<"offset"<<offset<<std::endl;
+        if (direction == LF_CHAR_Buy)
+            xtp_side = XTP_SIDE_MARGIN_TRADE;
+        else if (direction == LF_CHAR_Sell)
+            xtp_side = XTP_SIDE_REPAY_MARGIN;
+        else
+            xtp_side = XTP_SIDE_UNKNOWN;
+    }
 }
+
 
 inline void FromXtpOrderStatus(char& orderStatus, byte ordStatus)
 {

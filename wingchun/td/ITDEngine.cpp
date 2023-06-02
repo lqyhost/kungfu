@@ -231,6 +231,14 @@ void ITDEngine::listening()
                         req_qry_account(acc, idx, requestId);
                         break;
                     }
+                    case MSG_TYPE_LF_QRY_CREDIT:
+                    {
+                        LFQryCreditAccountField* acc = (LFQryCreditAccountField*)fdata;
+                        strcpy(acc->BrokerID, accounts[idx].BrokerID);
+                        strcpy(acc->InvestorID, accounts[idx].InvestorID);
+                        req_qry_credit(acc, idx, requestId);
+                        break;
+                    }
                     default:
                         KF_LOG_DEBUG(logger, "[Unexpected] frame found: (msg_type)" << msg_type << ", (name)" << name);
                 }
@@ -319,6 +327,25 @@ void ITDEngine::on_rsp_account(const LFRspAccountField* account, bool isLast, in
         KF_LOG_ERROR(logger, "[RspAccount] fail!" << " (rid)" << requestId << " (errorId)" << errorId << " (errorMsg)" << errorMsg);
     }
 }
+
+/** on rsp account info, engine (on_data) */
+void ITDEngine::on_rsp_credit(const LFRspCreditAccountField* account, bool isLast, int requestId, int errorId, const char* errorMsg)
+{
+    if (errorId == 0)
+    {
+        writer->write_frame(account, sizeof(LFRspCreditAccountField), source_id, MSG_TYPE_LF_RSP_CREDIT, isLast, requestId);
+        KF_LOG_DEBUG(logger, "[RspCreditAccount]" << " (rid)" << requestId
+                                            << " (investor)" << account->InvestorID
+                                            << " (balance)" << account->Balance
+                                            << " (value)" << account->MarketValue);
+    }
+    else
+    {
+        writer->write_error_frame(account, sizeof(LFRspCreditAccountField), source_id, MSG_TYPE_LF_RSP_CREDIT, isLast, requestId, errorId, errorMsg);
+        KF_LOG_ERROR(logger, "[RspCreditAccount] fail!" << " (rid)" << requestId << " (errorId)" << errorId << " (errorMsg)" << errorMsg);
+    }
+}
+
 /** on rtn order, engine (on_data) */
 void ITDEngine::on_rtn_order(const LFRtnOrderField* rtn_order)
 {

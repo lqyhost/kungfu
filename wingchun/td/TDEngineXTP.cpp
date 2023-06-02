@@ -205,8 +205,20 @@ void TDEngineXTP::req_qry_account(const LFQryAccountField *data, int account_ind
     }
 }
 
+void TDEngineXTP::req_qry_credit(const LFQryCreditAccountField* data, int account_index, int requestId)
+{
+    KF_LOG_DEBUG(logger, "[req_credit]" << " (Iid)" << data->InvestorID);
+
+    if (!account_units[account_index].logged_in || api->QueryCreditFundInfo(account_units[account_index].session_id, requestId) != 0)
+    {
+        KF_LOG_ERROR(logger, "[request] credit info failed!" << " (rid)" << requestId
+                                                              << " (idx)" << account_index);
+    }
+}
+
 void TDEngineXTP::req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time)
 {
+    std::cout<<"req_order_insert"<<data->OffsetFlag<<std::endl;
     struct XTPOrderInsertInfo req = parseTo(*data);
     if (is_credit)
     {
@@ -311,6 +323,7 @@ void TDEngineXTP::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error
 {
     if (error_info == nullptr || error_info->error_id == 0)
     {
+        std::cout<<"OnQueryPosition"<<position->ticker<<", "<<position->ticker_name<<", "<<position->market<<", "<<position->total_qty<<", "<<position->sellable_qty<<", "<<position->avg_price<<", "<<position->unrealized_pnl<<", "<<position->yesterday_position<<", "<<position->purchase_redeemable_qty<<", "<<position->position_direction<<", "<<position->position_security_type<<", "<<position->executable_option<<", "<<position->lockable_position<<", "<<position->executable_underlying<<", "<<position->locked_position<<", "<<position->usable_locked_position<<", "<<position->profit_price<<", "<<position->buy_cost<<", "<<position->profit_cost<<", "<<position->market_value<<std::endl;
         auto pos = parseFrom(*position);
         on_rsp_position(&pos, is_last, request_id);
     }
@@ -318,6 +331,40 @@ void TDEngineXTP::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error
     {
         LFRspPositionField pos = {};
         on_rsp_position(&pos, is_last, request_id, error_info->error_id, error_info->error_msg);
+    }
+}
+
+void TDEngineXTP::OnQueryAsset(XTPQueryAssetRsp* asset, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id)
+{
+    std::cout<<"OnQueryAsset"<<asset->total_asset<<", "<<asset->buying_power<<", "<<asset->security_asset<<", "<<asset->fund_buy_amount<<", "<<asset->fund_buy_fee<<", "<<asset->fund_sell_amount<<", "<<asset->fund_sell_fee<<", "<<asset->withholding_amount<<", "<<asset->account_type<<", "<<asset->frozen_margin<<", "<<asset->frozen_exec_cash<<", "<<asset->frozen_exec_fee<<", "<<asset->pay_later<<", "<<asset->preadva_pay<<", "<<asset->orig_banlance<<", "<<asset->banlance<<", "<<asset->deposit_withdraw<<", "<<asset->trade_netting<<", "<<asset->captial_asset<<", "<<asset->force_freeze_amount<<", "<<asset->preferred_amount<<", "<<asset->repay_stock_aval_banlance<<", "<<asset->fund_order_data_charges<<", "<<asset->fund_cancel_data_charges<<", "<<asset->exchange_cur_risk_degree<<", "<<asset->company_cur_risk_degree<<std::endl;
+    if (error_info == nullptr || error_info->error_id == 0)
+    {
+        std::cout<<"OnQueryAsset a"<<asset->total_asset<<std::endl;
+        auto acc = parseFrom(*asset);
+        on_rsp_account(&acc, is_last, request_id);
+    }
+    else
+    {
+        std::cout<<"OnQueryAsset b"<<asset->total_asset<<std::endl;
+        LFRspAccountField acc = {};
+        on_rsp_account(&acc, is_last, request_id, error_info->error_id, error_info->error_msg);
+    }
+}
+
+void TDEngineXTP::OnQueryCreditFundInfo(XTPCrdFundInfo *fund_info, XTPRI *error_info, int request_id, uint64_t session_id)
+{
+    std::cout<<"OnQueryCreditFundInfo"<<fund_info->guaranty<<std::endl;
+    if (error_info == nullptr || error_info->error_id == 0)
+    {
+        std::cout<<"OnQueryAsset "<<fund_info->guaranty<<std::endl;
+        auto acc = parseFrom(*fund_info);
+        on_rsp_credit(&acc, true, request_id);
+    }
+    else
+    {
+        std::cout<<"OnQueryAsset "<<fund_info->guaranty<<std::endl;
+        LFRspCreditAccountField acc = {};
+        on_rsp_credit(&acc, true, request_id, error_info->error_id, error_info->error_msg);
     }
 }
 

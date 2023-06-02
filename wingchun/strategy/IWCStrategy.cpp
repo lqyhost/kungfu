@@ -142,6 +142,16 @@ void IWCStrategy::on_rsp_position(const PosHandlerPtr posMap, int request_id, sh
     posMap->print(logger);
 }
 
+void IWCStrategy::on_account(const  LFRspAccountField* data, int request_id, short source, long rcv_time)
+{
+    KF_LOG_DEBUG(logger, "[on_account] (source)" << source << " (rid)" << request_id);
+}
+
+void IWCStrategy::on_credit(const  LFRspCreditAccountField* data, int request_id, short source, long rcv_time)
+{
+    KF_LOG_DEBUG(logger, "[on_credit] (source)" << source << " (rid)" << request_id);
+}
+
 void IWCStrategy::on_market_bar(const BarMdMap& data, int min_interval, short source, long rcv_time)
 {
     for (auto &iter: data)
@@ -215,12 +225,6 @@ bool IWCStrategy::td_is_connected(short source) const
                 offset = LF_CHAR_Close;\
             }\
         }\
-        if (eid == EXCHANGE_ID_SSE || eid == EXCHANGE_ID_SZE) {\
-            if (offset != LF_CHAR_Open) {\
-                KF_LOG_DEBUG(logger, "stock don't need to specify offset, default is open");\
-                offset = LF_CHAR_Open;\
-            }\
-        }\
     }
 
 /** util functions, check before calling WCStrategyUtil */
@@ -260,6 +264,26 @@ int IWCStrategy::req_position(short source)
         return -1;
     }
     return util->req_position(source);
+}
+
+int IWCStrategy::req_account(short source)
+{
+    if (!td_is_connected(source))
+    {
+        KF_LOG_ERROR(logger, "td (" << source << ") connection is failed. please check TD or yjj status");
+        return -1;
+    }
+    return util->req_account(source);
+}
+
+int IWCStrategy::req_credit(short source)
+{
+    if (!td_is_connected(source))
+    {
+        KF_LOG_ERROR(logger, "td (" << source << ") connection is failed. please check TD or yjj status");
+        return -1;
+    }
+    return util->req_credit(source);
 }
 
 int IWCStrategy::cancel_order(short source, int order_id)

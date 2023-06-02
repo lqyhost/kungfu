@@ -446,37 +446,77 @@ protected:
     {
         json& pos_array = get_pos_array(ticker);
         json& cost_array = get_cost_array(ticker);
-        switch(direction)
+        switch (offset)
         {
-            case LF_CHAR_Buy:
+            case LF_CHAR_Open:
             {
-                pos_array[POS_ARRAY_IDX(LF_CHAR_Net, TOTAL_INDEX)] =
-                        pos_array[POS_ARRAY_IDX(LF_CHAR_Net, TOTAL_INDEX)].get<VOLUME_DATA_TYPE>() + volume;
-                break;
-            }
-            case LF_CHAR_Sell:
-            {
-                pos_array[POS_ARRAY_IDX(LF_CHAR_Net, TOTAL_INDEX)] =
-                        pos_array[POS_ARRAY_IDX(LF_CHAR_Net, TOTAL_INDEX)].get<VOLUME_DATA_TYPE>() - volume;
-                VOLUME_DATA_TYPE avail = pos_array[POS_ARRAY_IDX(LF_CHAR_Net, AVAIL_INDEX)].get<VOLUME_DATA_TYPE>() - volume;
-                if (avail < 0)
-                    is_poisoned = true;
-                pos_array[POS_ARRAY_IDX(LF_CHAR_Net, AVAIL_INDEX)] = avail;
-                break;
+                switch(direction)
+                {
+                    case LF_CHAR_Buy:
+                    {
+                        pos_array[POS_ARRAY_IDX(LF_CHAR_Net, TOTAL_INDEX)] =
+                                pos_array[POS_ARRAY_IDX(LF_CHAR_Net, TOTAL_INDEX)].get<VOLUME_DATA_TYPE>() + volume;
+                        break;
+                    }
+                    case LF_CHAR_Sell:
+                    {
+                        pos_array[POS_ARRAY_IDX(LF_CHAR_Net, TOTAL_INDEX)] =
+                                pos_array[POS_ARRAY_IDX(LF_CHAR_Net, TOTAL_INDEX)].get<VOLUME_DATA_TYPE>() - volume;
+                        VOLUME_DATA_TYPE avail = pos_array[POS_ARRAY_IDX(LF_CHAR_Net, AVAIL_INDEX)].get<VOLUME_DATA_TYPE>() - volume;
+                        if (avail < 0)
+                            is_poisoned = true;
+                        pos_array[POS_ARRAY_IDX(LF_CHAR_Net, AVAIL_INDEX)] = avail;
+                        break;
+                    }
+                    default:
+                    {
+                        is_poisoned = true;
+                    }
+                }
+
+                cost_array[COST_ARRAY_IDX(LF_CHAR_Net, PH_POS_FEE_INDEX)]
+                        = cost_array[COST_ARRAY_IDX(LF_CHAR_Net, PH_POS_FEE_INDEX)].get<double>()
+                        + fee_handler->get_fee(ticker, volume, price, direction, offset, true, false);
+
+                cost_array[COST_ARRAY_IDX(LF_CHAR_Net, PH_BALANCE_INDEX)]
+                        = cost_array[COST_ARRAY_IDX(LF_CHAR_Net, PH_BALANCE_INDEX)].get<double>()
+                        + price * volume * ((direction == LF_CHAR_Buy) ? 1: -1);
             }
             default:
             {
-                is_poisoned = true;
+                switch(direction)
+                {
+                    case LF_CHAR_Buy:
+                    {
+                        pos_array[POS_ARRAY_IDX(LF_CHAR_Short, TOTAL_INDEX)] =
+                                pos_array[POS_ARRAY_IDX(LF_CHAR_Short, TOTAL_INDEX)].get<VOLUME_DATA_TYPE>() + volume;
+                        break;
+                    }
+                    case LF_CHAR_Sell:
+                    {
+                        pos_array[POS_ARRAY_IDX(LF_CHAR_Short, TOTAL_INDEX)] =
+                                pos_array[POS_ARRAY_IDX(LF_CHAR_Short, TOTAL_INDEX)].get<VOLUME_DATA_TYPE>() - volume;
+                        VOLUME_DATA_TYPE avail = pos_array[POS_ARRAY_IDX(LF_CHAR_Short, AVAIL_INDEX)].get<VOLUME_DATA_TYPE>() - volume;
+                        if (avail < 0)
+                            is_poisoned = true;
+                        pos_array[POS_ARRAY_IDX(LF_CHAR_Short, AVAIL_INDEX)] = avail;
+                        break;
+                    }
+                    default:
+                    {
+                        is_poisoned = true;
+                    }
+                }
+
+                cost_array[COST_ARRAY_IDX(LF_CHAR_Short, PH_POS_FEE_INDEX)]
+                        = cost_array[COST_ARRAY_IDX(LF_CHAR_Short, PH_POS_FEE_INDEX)].get<double>()
+                        + fee_handler->get_fee(ticker, volume, price, direction, offset, true, false);
+
+                cost_array[COST_ARRAY_IDX(LF_CHAR_Short, PH_BALANCE_INDEX)]
+                        = cost_array[COST_ARRAY_IDX(LF_CHAR_Short, PH_BALANCE_INDEX)].get<double>()
+                        + price * volume * ((direction == LF_CHAR_Buy) ? 1: -1);
             }
         }
-
-        cost_array[COST_ARRAY_IDX(LF_CHAR_Net, PH_POS_FEE_INDEX)]
-                = cost_array[COST_ARRAY_IDX(LF_CHAR_Net, PH_POS_FEE_INDEX)].get<double>()
-                  + fee_handler->get_fee(ticker, volume, price, direction, offset, true, false);
-
-        cost_array[COST_ARRAY_IDX(LF_CHAR_Net, PH_BALANCE_INDEX)]
-                = cost_array[COST_ARRAY_IDX(LF_CHAR_Net, PH_BALANCE_INDEX)].get<double>()
-                  + price * volume * ((direction == LF_CHAR_Buy) ? 1: -1);
     }
 
     inline void future_update(const string& ticker, VOLUME_DATA_TYPE volume, double price, LfDirectionType direction, LfOffsetFlagType offset)

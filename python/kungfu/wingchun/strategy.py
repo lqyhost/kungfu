@@ -103,6 +103,8 @@ class Strategy:
         self.set_func(lf.MsgTypes.MD, 'on_tick')
         self.set_func_rid(lf.MsgTypes.RTN_ORDER, 'on_rtn_order')
         self.set_func_rid(lf.MsgTypes.RTN_TRADE, 'on_rtn_trade')
+        self.set_func_rid(lf.MsgTypes.RSP_ACCOUNT, 'on_acc')
+        self.set_func_rid(lf.MsgTypes.RSP_CREDIT, 'on_credit')
         self.set_func_error('on_error')
         self.set_func_pos('on_pos')
         self.set_func_switch_day('on_switch_day')

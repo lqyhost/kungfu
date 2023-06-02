@@ -375,6 +375,46 @@ class LFRspAccountField(Structure):
         ("MarketValue", c_double),	# 账户市值 
         ]
 
+class LFQryCreditAccountField(Structure):
+    _fields_ = [
+        ("BrokerID", c_char * 11),	# 经纪公司代码 
+        ("InvestorID", c_char * 19),	# 投资者代码 
+        ]
+
+class LFRspCreditAccountField(Structure):
+    _fields_ = [
+        ("BrokerID", c_char * 11),	# 经纪公司代码 
+        ("InvestorID", c_char * 19),	# 投资者代码 
+        ("PreMortgage", c_double),	# 上次质押金额 
+        ("PreCredit", c_double),	# 上次信用额度 
+        ("PreDeposit", c_double),	# 上次存款额 
+        ("preBalance", c_double),	# 上次结算准备金 
+        ("PreMargin", c_double),	# 上次占用的保证金 
+        ("Deposit", c_double),	# 入金金额 
+        ("Withdraw", c_double),	# 出金金额 
+        ("FrozenMargin", c_double),	# 冻结的保证金（报单未成交冻结的保证金） 
+        ("FrozenCash", c_double),	# 冻结的资金（报单未成交冻结的总资金） 
+        ("FrozenCommission", c_double),	# 冻结的手续费（报单未成交冻结的手续费） 
+        ("CurrMargin", c_double),	# 当前保证金总额 
+        ("CashIn", c_double),	# 资金差额 
+        ("Commission", c_double),	# 手续费 
+        ("CloseProfit", c_double),	# 平仓盈亏 
+        ("PositionProfit", c_double),	# 持仓盈亏 
+        ("Balance", c_double),	# 结算准备金 
+        ("Available", c_double),	# 可用资金 
+        ("WithdrawQuota", c_double),	# 可取资金 
+        ("Reserve", c_double),	# 基本准备金 
+        ("TradingDay", c_char * 9),	# 交易日 
+        ("Credit", c_double),	# 信用额度 
+        ("Mortgage", c_double),	# 质押金额 
+        ("ExchangeMargin", c_double),	# 交易所保证金 
+        ("DeliveryMargin", c_double),	# 投资者交割保证金 
+        ("ExchangeDeliveryMargin", c_double),	# 交易所交割保证金 
+        ("ReserveBalance", c_double),	# 保底期货结算准备金 
+        ("Equity", c_double),	# 当日权益 
+        ("MarketValue", c_double),	# 账户市值 
+        ]
+
 DataFieldMap = {
 	'LFL2MarketDataField': {
 		'OfferVolumeA': 'd',
@@ -732,6 +772,8 @@ MsgType2LFStruct = {
     lf.MsgTypes.ORDER_ACTION: LFOrderActionField,
     lf.MsgTypes.QRY_ACCOUNT: LFQryAccountField,
     lf.MsgTypes.RSP_ACCOUNT: LFRspAccountField,
+    lf.MsgTypes.QRY_CREDIT: LFQryAccountField,
+    lf.MsgTypes.RSP_CREDIT: LFRspAccountField,
 }
 
 MsgType2LFStruct.update(SnifferMsgType2Struct)

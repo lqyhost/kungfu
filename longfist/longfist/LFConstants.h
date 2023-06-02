@@ -41,6 +41,8 @@ const short MSG_TYPE_LF_RTN_TRADE     = 206;
 const short MSG_TYPE_LF_ORDER_ACTION  = 207;
 const short MSG_TYPE_LF_QRY_ACCOUNT   = 208;
 const short MSG_TYPE_LF_RSP_ACCOUNT   = 209;
+const short MSG_TYPE_LF_QRY_CREDIT    = 210;
+const short MSG_TYPE_LF_RSP_CREDIT    = 211;
 
 // MsgTypes that from original data structures...
 // ctp, idx=1

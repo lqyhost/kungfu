@@ -44,6 +44,8 @@ public:
     virtual void on_rtn_trade(const LFRtnTradeField* data, int request_id, short source, long rcv_time);
     virtual void on_rsp_order(const LFInputOrderField* data, int request_id, short source, long rcv_time, short errorId=0, const char* errorMsg=nullptr);
     virtual void on_rsp_position(const PosHandlerPtr posMap, int request_id, short source, long rcv_time);
+    virtual void on_account(const  LFRspAccountField* data, int request_id, short source, long rcv_time);
+    virtual void on_credit(const  LFRspCreditAccountField* data, int request_id, short source, long rcv_time);
     virtual void on_switch_day(long rcv_time);
     //py log
     virtual void log_debug(string msg) { KF_LOG_DEBUG(logger, msg); };

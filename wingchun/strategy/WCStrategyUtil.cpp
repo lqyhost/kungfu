@@ -215,6 +215,22 @@ int WCStrategyUtil::req_position(short source)
     return rid;
 }
 
+int WCStrategyUtil::req_account(short source)
+{
+    int rid = get_rid();
+    LFQryAccountField req = {};
+    write_frame(&req, sizeof(LFQryAccountField), source, MSG_TYPE_LF_QRY_ACCOUNT, 1/*lastflag*/, rid);
+    return rid;
+}
+
+int WCStrategyUtil::req_credit(short source)
+{
+    int rid = get_rid();
+    LFQryCreditAccountField req = {};
+    write_frame(&req, sizeof(LFQryCreditAccountField), source, MSG_TYPE_LF_QRY_CREDIT, 1/*lastflag*/, rid);
+    return rid;
+}
+
 int WCStrategyUtil::cancel_order(short source, int order_id)
 {
     if (order_id < rid_start || order_id > rid_end)

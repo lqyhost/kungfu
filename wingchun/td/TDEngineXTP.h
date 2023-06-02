@@ -63,6 +63,7 @@ public:
     // req functions
     virtual void req_investor_position(const LFQryPositionField* data, int account_index, int requestId);
     virtual void req_qry_account(const LFQryAccountField* data, int account_index, int requestId);
+    virtual void req_qry_credit(const LFQryCreditAccountField* data, int account_index, int requestId);
     virtual void req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time);
     virtual void req_order_action(const LFOrderActionField* data, int account_index, int requestId, long rcv_time);
 
@@ -118,6 +119,24 @@ public:
     ///@param is_last 此消息响应函数是否为request_id这条请求所对应的最后一个响应，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
     ///@remark 由于用户可能持有多个股票，一个查询请求可能对应多个响应，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
     virtual void OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id);
+
+    ///请求查询资金账户响应，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
+    ///@param asset 查询到的资金账户情况
+    ///@param error_info 查询资金账户发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+    ///@param request_id 此消息响应函数对应的请求ID
+    ///@param is_last 此消息响应函数是否为request_id这条请求所对应的最后一个响应，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+    ///@param session_id 资金账户对应的session_id，登录时得到
+    ///@remark 需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
+    virtual void OnQueryAsset(XTPQueryAssetRsp* asset, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id);
+
+    ///请求查询信用账户额外信息的响应，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
+    ///@param fund_info 查询到的信用账户额外信息情况
+    ///@param error_info 查询信用账户额外信息发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+    ///@param request_id 此消息响应函数对应的请求ID
+    ///@param session_id 资金账户对应的session_id，登录时得到
+    ///@remark 需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
+    virtual void OnQueryCreditFundInfo(XTPCrdFundInfo *fund_info, XTPRI *error_info, int request_id, uint64_t session_id);
+
 };
 
 WC_NAMESPACE_END

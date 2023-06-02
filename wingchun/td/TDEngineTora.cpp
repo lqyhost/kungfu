@@ -199,6 +199,9 @@ bool TDEngineTora::req_qry_account(const LFQryAccountField* data, int account_in
     return true;
 }
 
+void TDEngineTora::req_qry_credit(const LFQryCreditAccountField* data, int account_index, int requestId)
+{}
+
 bool TDEngineTora::req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time)
 {
     auto& unit = account_units[account_index];

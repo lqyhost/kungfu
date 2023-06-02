@@ -256,6 +256,16 @@ void WCDataWrapper::run()
                             process_rsp_position((LFRspPositionField *) data, frame->getLastFlag(), request_id, msg_source, cur_time);
                             break;
                         }
+                        case MSG_TYPE_LF_RSP_ACCOUNT:
+                        {
+                            processor->on_account((LFRspAccountField *) data, request_id, msg_source, cur_time);
+                            break;
+                        }
+                        case MSG_TYPE_LF_RSP_CREDIT:
+                        {
+                            processor->on_credit((LFRspCreditAccountField *) data, request_id, msg_source, cur_time);
+                            break;
+                        }
                         case MSG_TYPE_LF_ORDER:
                         {
                             processor->on_rsp_order((LFInputOrderField *) data, request_id, msg_source, cur_time,
