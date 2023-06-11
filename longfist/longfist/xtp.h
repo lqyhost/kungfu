@@ -90,19 +90,25 @@ inline struct XTPOrderInsertInfo parseTo(const struct LFInputOrderField& lf)
 	res.order_client_id = (int)atoi(lf.OrderRef);
 	res.price = lf.LimitPrice;
 	res.quantity = lf.Volume;
-	if (lf.TimeCondition == LF_CHAR_IOC)
+	if ((lf.TimeCondition == LF_CHAR_IOC) & (lf.VolumeCondition == LF_CHAR_AV))
 	{
-		if (lf.VolumeCondition == LF_CHAR_CV)
-			res.price_type == XTP_PRICE_BEST5_OR_CANCEL;
-		else
-			res.price_type == XTP_PRICE_ALL_OR_CANCEL;
+		res.price_type = XTP_PRICE_LIMIT;
+        if (lf.Direction == LF_CHAR_Buy)
+            res.side = XTP_SIDE_MARGIN_TRADE;
+        else if (lf.Direction == LF_CHAR_Sell)
+            res.side = XTP_SIDE_REPAY_MARGIN;
+		// if (lf.VolumeCondition == LF_CHAR_CV)
+		// 	res.price_type == XTP_PRICE_BEST5_OR_CANCEL;
+		// else
+		// 	res.price_type == XTP_PRICE_ALL_OR_CANCEL;
 	}
 	else
 	{
 		ToXtpPriceType(res.price_type, lf.OrderPriceType);
+		ToXtpDirection(res.side, lf.Direction);
 	}
 	//ToXtpPriceType(res.price_type, lf.OrderPriceType);
-	ToXtpDirection(res.side, lf.Direction);
+	// ToXtpDirection(res.side, lf.Direction);
 	res.stop_price = lf.StopPrice;
 	return res;
 }
