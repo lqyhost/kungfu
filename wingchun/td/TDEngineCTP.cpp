@@ -78,7 +78,11 @@ TradeAccount TDEngineCTP::load_account(int idx, const json& j_config)
     unit.logged_in = false;
     unit.settle_confirmed = false;
     if (need_authenticate)
+    {
         unit.auth_code = j_config[WC_CONFIG_KEY_AUTH_CODE].get<string>();
+        unit.app_id = j_config["AppId"].get<string>();
+    }
+        
 
     // set up
     TradeAccount account = {};
@@ -135,6 +139,7 @@ void TDEngineCTP::login(long timeout_nsec)
             strcpy(req.BrokerID, account.BrokerID);
             strcpy(req.UserID, account.UserID);
             strcpy(req.AuthCode, unit.auth_code.c_str());
+            strcpy(req.AppID, unit.app_id.c_str());
             unit.auth_rid = request_id;
             if (unit.api->ReqAuthenticate(&req, request_id++))
             {
