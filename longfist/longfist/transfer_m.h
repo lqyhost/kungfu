@@ -108,9 +108,16 @@ inline void ToXtpMarket(XTP_MARKET_TYPE& marketId, const char* exchangeId)
         marketId = XTP_MKT_UNKNOWN;
 }
 
-inline void FromXtpPosiDirection(char& posi_direction, XTP_MARKET_TYPE marketId)
+inline void FromXtpPosiDirection(char& posi_direction, XTP_POSITION_DIRECTION_TYPE position_direction)
 {
-    posi_direction = LF_CHAR_Net;
+	if (position_direction == XTP_POSITION_DIRECTION_NET)
+        posi_direction = LF_CHAR_Net;
+    else if (position_direction == XTP_POSITION_DIRECTION_LONG)
+        posi_direction = LF_CHAR_Long;
+    else if (position_direction == XTP_POSITION_DIRECTION_SHORT)
+        posi_direction = LF_CHAR_Short;
+    else
+        posi_direction = LF_CHAR_Unknown;
 }
 
 inline void FromXtpPriceType(char& order_price_type, XTP_PRICE_TYPE xtp_type)
@@ -139,6 +146,16 @@ inline void FromXtpDirection(char& direction, XTP_SIDE_TYPE xtp_side)
         direction = '\0';
 }
 
+inline void FromXtpOffset(char& offset, XTP_POSITION_EFFECT_TYPE xtp_offset)
+{
+    if (xtp_offset = XTP_POSITION_EFFECT_OPEN)
+        offset == LF_CHAR_Open;
+    else if (xtp_offset = XTP_POSITION_EFFECT_CLOSE)
+        offset == LF_CHAR_Close;
+    else
+        xtp_offset = XTP_SIDE_UNKNOWN;
+}
+
 inline void ToXtpDirection(XTP_SIDE_TYPE& xtp_side, char direction)
 {
     if (direction == LF_CHAR_Buy)
@@ -147,6 +164,16 @@ inline void ToXtpDirection(XTP_SIDE_TYPE& xtp_side, char direction)
         xtp_side = XTP_SIDE_SELL;
     else
         xtp_side = XTP_SIDE_UNKNOWN;
+}
+
+inline void ToXtpOffset(XTP_POSITION_EFFECT_TYPE& xtp_offset, char offset)
+{
+    if (offset == LF_CHAR_Open)
+        xtp_offset = XTP_POSITION_EFFECT_OPEN;
+    else if (offset == LF_CHAR_Close)
+        xtp_offset = XTP_POSITION_EFFECT_CLOSE;
+    else
+        xtp_offset = XTP_SIDE_UNKNOWN;
 }
 
 inline void FromXtpOrderStatus(char& orderStatus, byte ordStatus)

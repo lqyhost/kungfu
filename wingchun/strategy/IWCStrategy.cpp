@@ -227,28 +227,28 @@ bool IWCStrategy::td_is_connected(short source) const
 int IWCStrategy::insert_market_order(short source, string instrument_id, string exchange_id, int volume, LfDirectionType direction, LfOffsetFlagType offset)
 {
     CHECK_TD_READY(source);
-    CHECK_EXCHANGE_AND_OFFSET(exchange_id, offset);
+    // CHECK_EXCHANGE_AND_OFFSET(exchange_id, offset);
     return util->insert_market_order(source, instrument_id, exchange_id, volume, direction, offset);
 }
 
 int IWCStrategy::insert_limit_order(short source, string instrument_id, string exchange_id, double price, int volume, LfDirectionType direction, LfOffsetFlagType offset)
 {
     CHECK_TD_READY(source);
-    CHECK_EXCHANGE_AND_OFFSET(exchange_id, offset);
+    // CHECK_EXCHANGE_AND_OFFSET(exchange_id, offset);
     return util->insert_limit_order(source, instrument_id, exchange_id, price, volume, direction, offset);
 }
 
 int IWCStrategy::insert_fok_order(short source, string instrument_id, string exchange_id, double price, int volume, LfDirectionType direction, LfOffsetFlagType offset)
 {
     CHECK_TD_READY(source);
-    CHECK_EXCHANGE_AND_OFFSET(exchange_id, offset);
+    // CHECK_EXCHANGE_AND_OFFSET(exchange_id, offset);
     return util->insert_fok_order(source, instrument_id, exchange_id, price, volume, direction, offset);
 }
 
 int IWCStrategy::insert_fak_order(short source, string instrument_id, string exchange_id, double price, int volume, LfDirectionType direction, LfOffsetFlagType offset)
 {
     CHECK_TD_READY(source);
-    CHECK_EXCHANGE_AND_OFFSET(exchange_id, offset);
+    // CHECK_EXCHANGE_AND_OFFSET(exchange_id, offset);
     return util->insert_fak_order(source, instrument_id, exchange_id, price, volume, direction, offset);
 }
 

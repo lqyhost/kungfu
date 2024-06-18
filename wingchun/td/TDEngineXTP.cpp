@@ -45,14 +45,30 @@ void TDEngineXTP::pre_load(const json& j_config)
     front_port = j_config["Port"].get<int>();
     account_key = j_config["Key"].get<string>();
     client_id = j_config["ClientId"].get<int>();
-    if (j_config.find("IsCredit") != j_config.end()
-        && j_config["IsCredit"].get<bool>())
+    if (j_config.find("AccountType") != j_config.end())
     {
-        is_credit = true;
-        KF_LOG_INFO(logger, "[ATTENTION] is creadit account");
+        if (j_config["AccountType"].get<string>() == "Credit")
+        {
+            KF_LOG_INFO(logger, "[ATTENTION] account type Credit");
+            account_type = 1;
+        }
+        else if (j_config["AccountType"].get<string>() == "Option")
+        {
+            KF_LOG_INFO(logger, "[ATTENTION] account type Option");
+            account_type = 2;
+        }
+        else
+        {
+            KF_LOG_INFO(logger, "[ATTENTION] account type not supported, will use default Stock");
+            account_type = 0;
+        }
+
     }
     else
-        is_credit = false;
+    {
+        KF_LOG_ERROR(logger, "[ATTENTION] account type not supported, will use default MARGIN");
+        account_type = 0;
+    }
 }
 
 void TDEngineXTP::resize_accounts(int account_num)
@@ -208,9 +224,15 @@ void TDEngineXTP::req_qry_account(const LFQryAccountField *data, int account_ind
 void TDEngineXTP::req_order_insert(const LFInputOrderField* data, int account_index, int requestId, long rcv_time)
 {
     struct XTPOrderInsertInfo req = parseTo(*data);
-    if (is_credit)
+    if (account_type == 1)
     {
         req.business_type = XTP_BUSINESS_TYPE_MARGIN;
+        printf("XTP_BUSINESS_TYPE_MARGIN\n");
+    }
+    else if (account_type == 2)
+    {
+        req.business_type = XTP_BUSINESS_TYPE_OPTION;
+        printf("XTP_BUSINESS_TYPE_OPTION\n");
     }
     KF_LOG_DEBUG(logger, "[req_order_insert]" << " (rid)" << requestId
                                               << " (Tid)" << req.ticker

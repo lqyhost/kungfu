@@ -147,6 +147,7 @@ void TDEngineCTP::login(long timeout_nsec)
                                                               << " (Uid)" << req.UserID
                                                               << " (Auth)" << req.AuthCode);
             }
+            std::cout<<req.AuthCode<<" req.AppID "<<req.AppID<<std::endl;
             long start_time = yijinjing::getNanoTime();
             while (!unit.authenticated && yijinjing::getNanoTime() - start_time < timeout_nsec)
             {}

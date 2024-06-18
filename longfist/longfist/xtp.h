@@ -64,7 +64,7 @@ inline struct LFRspPositionField parseFrom(const struct XTPQueryStkPositionRsp& 
 	res.YdPosition = ori.sellable_qty;
 	res.Position = ori.total_qty;
 	res.PositionCost = ori.avg_price;
-	FromXtpPosiDirection(res.PosiDirection, ori.market);
+	FromXtpPosiDirection(res.PosiDirection, ori.position_direction);
 	return res;
 }
 
@@ -107,6 +107,8 @@ inline struct XTPOrderInsertInfo parseTo(const struct LFInputOrderField& lf)
 		ToXtpPriceType(res.price_type, lf.OrderPriceType);
 		ToXtpDirection(res.side, lf.Direction);
 	}
+	ToXtpOffset(res.position_effect, lf.OffsetFlag);
+	// res.position_effect = XTP_POSITION_EFFECT_OPEN;
 	//ToXtpPriceType(res.price_type, lf.OrderPriceType);
 	// ToXtpDirection(res.side, lf.Direction);
 	res.stop_price = lf.StopPrice;
@@ -125,6 +127,7 @@ inline struct LFRtnOrderField parseFrom(const struct XTPOrderInfo& ori)
 	res.VolumeTotalOriginal = ori.quantity;
 	FromXtpPriceType(res.OrderPriceType, ori.price_type);
 	FromXtpDirection(res.Direction, ori.side);
+	FromXtpOffset(res.OffsetFlag, ori.position_effect);
 	FromXtpOrderStatus(res.OrderStatus, ori.order_status);
 	return res;
 }
@@ -143,6 +146,7 @@ inline struct LFRtnTradeField parseFrom(const struct XTPTradeReport& ori)
 	TradingDayFromLong(res.TradingDay, ori.trade_time);
 	UpdateTimeFromLong(res.TradeTime, ori.trade_time);
 	FromXtpDirection(res.Direction, ori.side);
+	FromXtpOffset(res.OffsetFlag, ori.position_effect);
 	return res;
 }
 
