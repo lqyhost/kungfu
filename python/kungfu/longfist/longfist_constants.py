@@ -73,6 +73,10 @@ class LfContingentConditionType:
 class LfDirectionType:
     Buy = '0' #买
     Sell = '1' #卖
+    ReverseRepur = '6' #逆回购
+    BuyOption = 'c' #买入期权
+    SellOption = 'd' #卖出期权
+
 
 ###################################
 # LfForceCloseReasonType: 强平原因
@@ -268,6 +272,9 @@ LfContingentConditionTypeMap = {
 LfDirectionTypeMap = {
     '0': 'Buy',
     '1': 'Sell',
+    '6': 'ReverseRepur',
+    'c': 'BuyOption',
+    'd': 'SellOption',
 }
 
 LfForceCloseReasonTypeMap = {

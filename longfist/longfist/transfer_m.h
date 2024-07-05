@@ -151,17 +151,29 @@ inline void FromXtpOffset(char& offset, XTP_POSITION_EFFECT_TYPE xtp_offset)
     if (xtp_offset = XTP_POSITION_EFFECT_OPEN)
         offset == LF_CHAR_Open;
     else if (xtp_offset = XTP_POSITION_EFFECT_CLOSE)
-        offset == LF_CHAR_Close;
+        offset = LF_CHAR_Close;
     else
-        xtp_offset = XTP_SIDE_UNKNOWN;
+        offset = LF_CHAR_Non;
 }
 
-inline void ToXtpDirection(XTP_SIDE_TYPE& xtp_side, char direction)
+inline void ToXtpDirection(XTP_SIDE_TYPE& xtp_side, XTP_BUSINESS_TYPE& business_type, char direction)
 {
     if (direction == LF_CHAR_Buy)
         xtp_side = XTP_SIDE_BUY;
     else if (direction == LF_CHAR_Sell)
         xtp_side = XTP_SIDE_SELL;
+	//此处添加期权类型
+    else if (direction == LF_CHAR_BuyOption)
+	{
+		xtp_side = XTP_SIDE_BUY;
+		business_type = XTP_BUSINESS_TYPE_OPTION;
+	}
+    else if (direction == LF_CHAR_SellOption)
+	{
+		xtp_side = XTP_SIDE_SELL;
+		business_type = XTP_BUSINESS_TYPE_OPTION;
+	}
+
     else
         xtp_side = XTP_SIDE_UNKNOWN;
 }

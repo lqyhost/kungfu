@@ -191,6 +191,7 @@ void MDEngineXTP::subscribeMarketData(const vector<string>& instruments, const v
     map<byte, vector<string> > ticker_map;
     for (size_t i = 0; i < markets.size(); i++)
     {
+        std::cout<<instruments[i]<<" "<<markets[i]<<std::endl;
         const string& market = markets[i];
         XTP_EXCHANGE_TYPE exId = XTP_EXCHANGE_UNKNOWN;
         if (market.size() > 0)

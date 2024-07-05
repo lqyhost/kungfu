@@ -105,7 +105,7 @@ inline struct XTPOrderInsertInfo parseTo(const struct LFInputOrderField& lf)
 	else
 	{
 		ToXtpPriceType(res.price_type, lf.OrderPriceType);
-		ToXtpDirection(res.side, lf.Direction);
+		ToXtpDirection(res.side, res.business_type, lf.Direction);
 	}
 	ToXtpOffset(res.position_effect, lf.OffsetFlag);
 	// res.position_effect = XTP_POSITION_EFFECT_OPEN;

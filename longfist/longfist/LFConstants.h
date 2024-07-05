@@ -120,6 +120,16 @@ typedef char LfContingentConditionType;
 #define LF_CHAR_Buy             '0'
 //卖
 #define LF_CHAR_Sell            '1'
+//逆回购
+#define LF_CHAR_ReverseRepur    '6'
+//融资买入
+#define LF_CHAR_MarginBuy       'a'
+//卖券还款
+#define LF_CHAR_MarginSell      'b'
+//买入期权
+#define LF_CHAR_BuyOption       'c'
+//卖出期权
+#define LF_CHAR_SellOption      'd'
 
 typedef char LfDirectionType;
 
