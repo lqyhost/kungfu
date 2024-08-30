@@ -4,6 +4,8 @@
 
 class SOURCE:
     CTP = 1
+    XTP = 15
+    XTPOption = 16
 
 class EXCHANGE:
     SSE = 'SSE' #上海证券交易所

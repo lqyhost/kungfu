@@ -9,6 +9,7 @@
 // Index for Sources...
 const short SOURCE_CTP = 1;
 const short SOURCE_XTP = 15;
+const short SOURCE_XTP_OPTION = 16;
 
 // Exchange names
 #define EXCHANGE_SSE "SSE" //上海证券交易所

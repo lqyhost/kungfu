@@ -52,17 +52,11 @@ void TDEngineXTP::pre_load(const json& j_config)
             KF_LOG_INFO(logger, "[ATTENTION] account type Credit");
             account_type = 1;
         }
-        else if (j_config["AccountType"].get<string>() == "Option")
-        {
-            KF_LOG_INFO(logger, "[ATTENTION] account type Option");
-            account_type = 2;
-        }
         else
         {
             KF_LOG_INFO(logger, "[ATTENTION] account type not supported, will use default Stock");
             account_type = 0;
         }
-
     }
     else
     {
@@ -228,11 +222,6 @@ void TDEngineXTP::req_order_insert(const LFInputOrderField* data, int account_in
     {
         req.business_type = XTP_BUSINESS_TYPE_MARGIN;
         printf("XTP_BUSINESS_TYPE_MARGIN\n");
-    }
-    else if (account_type == 2)
-    {
-        req.business_type = XTP_BUSINESS_TYPE_OPTION;
-        printf("XTP_BUSINESS_TYPE_OPTION\n");
     }
     KF_LOG_DEBUG(logger, "[req_order_insert]" << " (rid)" << requestId
                                               << " (Tid)" << req.ticker

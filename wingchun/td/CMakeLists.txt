@@ -26,3 +26,8 @@ SET(XTP_SOURCE_FILES ${TD_SOURCE_FILES} TDEngineXTP.cpp TDEngineXTP.h)
 ADD_LIBRARY(xtptd SHARED ${XTP_SOURCE_FILES})
 TARGET_LINK_LIBRARIES(xtptd journal kflog xtptraderapi ${Boost_LIBRARIES})
 INSTALL(TARGETS xtptd DESTINATION "lib/wingchun")
+
+SET(XTP_OPTION_SOURCE_FILES ${TD_SOURCE_FILES} TDEngineXTPOption.cpp TDEngineXTPOption.h)
+ADD_LIBRARY(xtpoptiontd SHARED ${XTP_OPTION_SOURCE_FILES})
+TARGET_LINK_LIBRARIES(xtpoptiontd journal kflog xtptraderapi ${Boost_LIBRARIES})
+INSTALL(TARGETS xtpoptiontd DESTINATION "lib/wingchun")
